@@ -21,8 +21,10 @@
   "homepage": "https://github.com/synapsestudios/synapi-client#readme",
   "devDependencies": {
     "chai": "^3.5.0",
+    "chai-as-promised": "^5.3.0",
     "mocha": "^2.4.5",
     "rewire": "^2.5.1",
-    "sinon": "^1.17.3"
+    "sinon": "^1.17.3",
+    "sinon-chai": "^2.8.0"
   }
 }
