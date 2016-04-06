@@ -14,7 +14,7 @@
     "url": "git+https://github.com/synapsestudios/synapi-client.git"
   },
   "author": "Aaron Bruce <aaron@synapsestudios.com> (synapsestudios.com)",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/synapsestudios/synapi-client/issues"
   },
