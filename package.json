@@ -1,0 +1,30 @@
+{
+  "name": "synapi-client",
+  "version": "0.0.1",
+  "description": "A wrapper for fetch to make things more easier",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synapsestudios/synapi-client.git"
+  },
+  "author": "Aaron Bruce <aaron@synapsestudios.com> (synapsestudios.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/synapsestudios/synapi-client/issues"
+  },
+  "homepage": "https://github.com/synapsestudios/synapi-client#readme",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "chai-as-promised": "^5.3.0",
+    "mocha": "^2.4.5",
+    "rewire": "^2.5.1",
+    "sinon": "^1.17.3",
+    "sinon-chai": "^2.8.0"
+  }
+}
