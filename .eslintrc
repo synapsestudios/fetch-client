@@ -1,0 +1,9 @@
+{
+    "extends": "airbnb",
+    "rules": {
+        "func-names": 1,
+        "new-cap": [2, {"newIsCapExceptions": ["fromJS"]}],
+        "react/jsx-no-bind": 0,
+        "react/prefer-es6-class": 0,
+    }
+}
