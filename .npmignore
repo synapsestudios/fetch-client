@@ -2,7 +2,6 @@ src
 test
 
 npm-debug.log*
-node_modules
 _vimrc_local.vim
 .npm
 .git
