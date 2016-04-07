@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "mocha",
-    "build": "babel src --out-dir dist",
+    "clean": "rm -rf dist",
+    "build": "npm run clean && babel src --out-dir dist",
     "lint": "eslint src"
   },
   "repository": {
