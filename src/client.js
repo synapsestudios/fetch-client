@@ -1,7 +1,9 @@
-const fetch = require('whatwg-fetch').fetch;
+export default class Client {
+  constructor(defaults) {
+    this.defaults = defaults;
+  }
 
-module.exports = function Client(defaults) {
-  return {
-    fetch: (path, options) => fetch(path, options),
-  };
-};
+  fetch(path, options) {
+    return fetch(path, options);
+  }
+}

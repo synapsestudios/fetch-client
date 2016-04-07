@@ -1,15 +1,15 @@
 /* eslint no-unused-vars:0 */
-const chai = require('chai');
-const sinon = require('sinon');
-const rewire = require('rewire');
-const expect = chai.expect;
+import chai, { expect } from 'chai';
+import sinon from 'sinon';
+import rewire from 'rewire';
 
-const chaiAsPromised = require('chai-as-promised');
-const sinonChai = require('sinon-chai');
+import chaiAsPromised from 'chai-as-promised';
+import sinonChai from 'sinon-chai';
+
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
 
-const Client = require('../src/client');
+import Client from '../lib/client';
 
 describe('client', () => {
   it('should not fail to instantiate', () => {
