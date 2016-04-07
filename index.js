@@ -1,5 +1,5 @@
-const ormClient = require('./src/orm-client');
+const Client = require('./src/client');
 
 export {
-  ormClient,
+  Client,
 };
