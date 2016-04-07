@@ -1,3 +1,4 @@
+/* eslint no-unused-vars:0 */
 const chai = require('chai');
 const sinon = require('sinon');
 const rewire = require('rewire');
@@ -8,8 +9,10 @@ const sinonChai = require('sinon-chai');
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
 
-describe('example', () => {
-  it('should pass', () => {
-    expect(1).to.equal(1);
+const Client = require('../src/client');
+
+describe('client', () => {
+  it('should not fail to instantiate', () => {
+    const myClient = new Client({ arbitrary: 'object' });
   });
 });
