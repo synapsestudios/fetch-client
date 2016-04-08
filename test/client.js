@@ -215,6 +215,18 @@ describe('client', () => {
       expect(onStart2).to.be.calledBefore(onStart3);
     });
 
-    it('can register helper methods on the client object');
+    it('can register helper methods on the client object', () => {
+      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      const myClient = new Client();
+      const newMethod = sinon.spy();
+
+      myClient.addMiddleware({
+        helpers: {
+          newMethod,
+        },
+      });
+
+      expect(myClient.newMethod).to.equal(newMethod);
+    });
   });
 });
