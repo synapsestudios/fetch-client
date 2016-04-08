@@ -108,7 +108,21 @@ describe('client', () => {
       expect(myClient._middleware).to.deep.equal([myMiddleware, myThirdMiddleware]);
     });
 
-    it('onStart is called');
+    it('calls onStart', () => {
+      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      const myClient = new Client();
+      const onStart = sinon.spy((request) => request);
+      const myMiddleware = { onStart };
+
+      myClient.addMiddleware(myMiddleware);
+
+      return myClient.fetch().then(() => {
+        expect(onStart).to.have.been.calledOnce;
+        done();
+      })
+    });
+
+    it('can emit custom events');
     it('cancels the request when onStart returns false');
     it('calls multiple middleware in the order they were added');
   });
