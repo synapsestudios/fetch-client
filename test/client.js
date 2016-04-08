@@ -189,7 +189,16 @@ describe('client', () => {
       return expect(promise).to.be.rejected;
     });
 
-    it('rejects with a custom error object');
+    it('rejects with a custom error object', () => {
+      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      const myClient = new Client();
+      myClient.addMiddleware({ onStart: () => false });
+
+      const promise = myClient.fetch();
+      expect(GLOBAL.fetch).to.not.be.called;
+      return expect(promise).to.be.rejectedWith(MiddlewareError);
+    });
+
     it('calls multiple middleware in the order they were added');
     it('can register helper methods on the client object');
   });
