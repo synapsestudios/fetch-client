@@ -76,4 +76,37 @@ describe('client', () => {
       expect(myClient.eventEmitter).to.be.instanceof(EventEmitter2);
     });
   });
+
+  describe('middleware', () => {
+    it('can be added', () => {
+      const myClient = new Client();
+      const myMiddleware = { foo: 'foo' };
+
+      myClient.addMiddleware(myMiddleware);
+      expect(myMiddleware._middleware).to.deep.equal([myMiddleware]);
+
+      const mySecondMiddleware = { bar: 'bar' };
+      myClient.addMiddleware(mySecondMiddleware);
+      expect(myMiddleware._middleware).to.deep.equal([myMiddleware, mySecondMiddleware]);
+    });
+
+    it('can be removed', () => {
+      const myClient = new Client();
+      const myMiddleware = { foo: 'foo', name: 'myMiddleware' };
+      const mySecondMiddleware = { bar: 'bar', name: 'mySecondMiddleware' };
+      const myThirdMiddleware = { baz: 'baz', name: 'myThirdMiddleware' };
+
+      myClient.addMiddleware(myMiddleware);
+      myClient.addMiddleware(mySecondMiddleware);
+      myClient.addMiddleware(myThirdMiddleware);
+
+      myClient.removeMiddleware('mySecondMiddleware');
+
+      expect(myMiddleware._middleware).to.deep.equal([myMiddleware, myThirdMiddleware]);
+    });
+
+    it('onStart is called');
+    it('cancels the request when onStart returns false');
+    it('calls multiple middleware in the order they were added');
+  });
 });
