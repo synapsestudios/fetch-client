@@ -144,7 +144,26 @@ describe('client', () => {
       expect(onStart2).to.have.been.calledWith('test');
     });
 
-    it('can emit custom events');
+    it('can emit custom events', () => {
+      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      const myClient = new Client();
+      const cb = sinon.spy();
+      myClient.on('custom_event', cb);
+
+      class MyMiddleware {
+        onStart(request) {
+          this.client.eventEmitter.emit('custom_event');
+          return request;
+        }
+      }
+
+      const myMiddleware = new MyMiddleware();
+      myClient.addMiddleware(myMiddleware);
+
+      myClient.fetch('http://whatever.com');
+      expect(cb).to.have.been.calledOnce;
+    });
+
     it('cancels the request when onStart returns false');
     it('calls multiple middleware in the order they were added');
     it('can register helper methods on the client object');

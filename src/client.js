@@ -39,6 +39,7 @@ export default class Client {
   }
 
   addMiddleware(middleware) {
+    middleware.client = this;
     this._middleware.push(middleware);
   }
 
