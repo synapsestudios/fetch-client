@@ -8,9 +8,20 @@ export default class Client {
     this._middleware = [];
   }
 
+  _callOnStarts(request) {
+    let i = 0;
+    while (i < this._middleware.length) {
+      request = this._middleware[0].onStart(request);
+      i += 1;
+    }
+
+    return request;
+  }
+
   fetch(path, options) {
-    const request = new Request(path, options);
+    let request = new Request(path, options);
     this.eventEmitter.emit(events.REQUEST_START, request);
+    request = this._callOnStarts(request);
 
     return fetch(request)
       .then(response => {
@@ -28,8 +39,8 @@ export default class Client {
   }
 
   removeMiddleware(name) {
-    let i;
-    for (i = 0; i < this._middleware.length; i++) {
+    let i = 0;
+    for (i; i < this._middleware.length; i++) {
       if (this._middleware[i].name === name) {
         this._middleware.splice(i, 1);
         i -= 1;
