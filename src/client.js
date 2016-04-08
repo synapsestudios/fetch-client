@@ -23,6 +23,14 @@ export default class Client {
     return mutatedRequest;
   }
 
+  _addHelpers(helpers) {
+    if (helpers) {
+      Object.keys(helpers).forEach((key) => {
+        this[key] = helpers[key];
+      });
+    }
+  }
+
   fetch(path, options) {
     let request = new Request(path, options);
     this.eventEmitter.emit(events.REQUEST_START, request);
@@ -56,6 +64,7 @@ export default class Client {
   addMiddleware(middleware) {
     middleware.client = this;
     this._middleware.push(middleware);
+    this._addHelpers(middleware.helpers);
   }
 
   removeMiddleware(name) {
