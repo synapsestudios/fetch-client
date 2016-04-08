@@ -199,7 +199,22 @@ describe('client', () => {
       return expect(promise).to.be.rejectedWith(MiddlewareError);
     });
 
-    it('calls multiple middleware in the order they were added');
+    it('calls multiple middleware in the order they were added', () => {
+      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      const onStart1 = sinon.spy((request) => request);
+      const onStart2 = sinon.spy((request) => request);
+      const onStart3 = sinon.spy((request) => request);
+
+      const myClient = new Client();
+      myClient.addMiddleware({ onStart: onStart1 });
+      myClient.addMiddleware({ onStart: onStart2 });
+      myClient.addMiddleware({ onStart: onStart3 });
+
+      myClient.fetch();
+      expect(onStart1).to.be.calledBefore(onStart2);
+      expect(onStart2).to.be.calledBefore(onStart3);
+    });
+
     it('can register helper methods on the client object');
   });
 });
