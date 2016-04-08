@@ -83,11 +83,11 @@ describe('client', () => {
       const myMiddleware = { foo: 'foo' };
 
       myClient.addMiddleware(myMiddleware);
-      expect(myMiddleware._middleware).to.deep.equal([myMiddleware]);
+      expect(myClient._middleware).to.deep.equal([myMiddleware]);
 
       const mySecondMiddleware = { bar: 'bar' };
       myClient.addMiddleware(mySecondMiddleware);
-      expect(myMiddleware._middleware).to.deep.equal([myMiddleware, mySecondMiddleware]);
+      expect(myClient._middleware).to.deep.equal([myMiddleware, mySecondMiddleware]);
     });
 
     it('can be removed', () => {
@@ -102,7 +102,7 @@ describe('client', () => {
 
       myClient.removeMiddleware('mySecondMiddleware');
 
-      expect(myMiddleware._middleware).to.deep.equal([myMiddleware, myThirdMiddleware]);
+      expect(myClient._middleware).to.deep.equal([myMiddleware, myThirdMiddleware]);
     });
 
     it('onStart is called');
