@@ -1,17 +1,18 @@
 /* eslint no-unused-vars:0, no-unused-expressions:0 */
-const chai = require('chai');
-const sinon = require('sinon');
-const rewire = require('rewire');
-const expect = chai.expect;
+import chai, { expect } from 'chai';
+import sinon from 'sinon';
 
-const chaiAsPromised = require('chai-as-promised');
-const sinonChai = require('sinon-chai');
+import chaiAsPromised from 'chai-as-promised';
+import sinonChai from 'sinon-chai';
+
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
 
-const Client = rewire('../src/client');
-const Request = require('whatwg-fetch').Request;
-var EventEmitter2 = require('eventemitter2');
+import Client from '../lib/client';
+
+import EventEmitter2 from 'eventemitter2';
+import { Request, fetch } from 'whatwg-fetch';
+GLOBAL.Request = Request;
 
 describe('client', () => {
   it('should not fail to instantiate', () => {
@@ -20,6 +21,8 @@ describe('client', () => {
 
   describe('events', () => {
     it('should emit starting event', () => {
+      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+
       const myClient = new Client();
       const cb = sinon.spy();
       myClient.on('request_start', cb);
@@ -32,7 +35,7 @@ describe('client', () => {
     });
 
     it('should emit success event', () => {
-      Client.__set__('fetch', (request) => Promise.resolve('test'));
+      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
 
       const myClient = new Client();
       const cb = sinon.spy();
@@ -50,7 +53,7 @@ describe('client', () => {
     });
 
     it('should emit fail event', () => {
-      Client.__set__('fetch', (request) => Promise.reject('test'));
+      GLOBAL.fetch = sinon.spy(() => Promise.reject('test'));
 
       const myClient = new Client();
       const cb = sinon.spy();

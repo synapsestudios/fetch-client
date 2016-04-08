@@ -1,0 +1,9 @@
+src
+test
+
+npm-debug.log*
+_vimrc_local.vim
+.npm
+.git
+.eslintcache
+.node_repl_history
