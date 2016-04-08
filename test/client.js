@@ -126,5 +126,6 @@ describe('client', () => {
     it('can emit custom events');
     it('cancels the request when onStart returns false');
     it('calls multiple middleware in the order they were added');
+    it('can register helper methods on the client object');
   });
 });
