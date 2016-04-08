@@ -10,7 +10,8 @@
     "test": "npm run build && mocha --compilers js:babel-register",
     "clean": "rm -rf dist",
     "build": "npm run clean && babel src --out-dir lib",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "prepublish": "npm lint && npm test"
   },
   "repository": {
     "type": "git",
