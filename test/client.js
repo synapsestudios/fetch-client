@@ -131,7 +131,7 @@ describe('client', () => {
       return expect(promise).to.be.fulfilled;
     });
 
-    it('calls onSubmit with the previous onSubmits return value', () => {
+    it('calls onStart with the previous onStart return value', () => {
       GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
       const onStart1 = sinon.spy((request) => 'test');
       const onStart2 = sinon.spy((request) => request);
