@@ -118,10 +118,10 @@ describe('client', () => {
 
       return myClient.fetch().then(() => {
         expect(onStart).to.have.been.calledOnce;
-        done();
       })
     });
 
+    it('calls onSubmit with the prevous onSubmits return value');
     it('can emit custom events');
     it('cancels the request when onStart returns false');
     it('calls multiple middleware in the order they were added');
