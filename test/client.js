@@ -121,7 +121,16 @@ describe('client', () => {
       })
     });
 
-    it(`doesn't break when onStart is left out`);
+    it(`doesn't break when onStart is left out`, () => {
+      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      const myClient = new Client();
+      const myMiddleware = { arbitrary: 'object' };
+      myClient.addMiddleware(myMiddleware);
+
+      const promise = myClient.fetch();
+      return expect(promise).to.be.fulfilled;
+    });
+
     it('calls onSubmit with the previous onSubmits return value');
     it('can emit custom events');
     it('cancels the request when onStart returns false');

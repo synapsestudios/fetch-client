@@ -11,7 +11,9 @@ export default class Client {
   _callOnStarts(request) {
     let i = 0;
     while (i < this._middleware.length) {
-      request = this._middleware[0].onStart(request);
+      if (this._middleware[0].onStart) {
+        request = this._middleware[0].onStart(request);
+      }
       i += 1;
     }
 
