@@ -28,9 +28,9 @@ export default class Client {
     this.eventEmitter.emit(events.REQUEST_START, request);
     request = this._callOnStarts(request);
 
-    let requestPromise;
+    let fetchPromise;
     if (request) {
-      requestPromise = fetch(request)
+      fetchPromise = fetch(request)
         .then(response => {
           this.eventEmitter.emit(events.REQUEST_SUCCESS, request, response);
           return response;
@@ -40,10 +40,10 @@ export default class Client {
           throw err;
         });
     } else {
-      requestPromise = Promise.reject(new MiddlewareError());
+      fetchPromise = Promise.reject(new MiddlewareError());
     }
 
-    return requestPromise;
+    return fetchPromise;
   }
 
   addMiddleware(middleware) {
