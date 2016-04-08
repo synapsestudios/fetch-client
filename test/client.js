@@ -121,7 +121,8 @@ describe('client', () => {
       })
     });
 
-    it('calls onSubmit with the prevous onSubmits return value');
+    it(`doesn't break when onStart is left out`);
+    it('calls onSubmit with the previous onSubmits return value');
     it('can emit custom events');
     it('cancels the request when onStart returns false');
     it('calls multiple middleware in the order they were added');
