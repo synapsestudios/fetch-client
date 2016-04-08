@@ -1,6 +1,6 @@
 {
     "extends": "airbnb",
-    "env": ["browser"],
+    "env": {"browser": true},
     "rules": {
         "func-names": 1,
         "new-cap": [2, {"newIsCapExceptions": ["fromJS"]}],
