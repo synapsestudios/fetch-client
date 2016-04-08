@@ -174,7 +174,20 @@ describe('client', () => {
       return expect(promise).to.be.rejected;
     });
 
-    it('cancels the request when onStart throws an error');
+    it('cancels the request when onStart throws an error', () => {
+      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      const myClient = new Client();
+      myClient.addMiddleware({
+        onStart: () => {
+          throw new Error();
+        },
+      });
+
+      const promise = myClient.fetch();
+      expect(GLOBAL.fetch).to.not.be.called;
+      return expect(promise).to.be.rejected;
+    });
+
     it('rejects with a custom error object');
     it('calls multiple middleware in the order they were added');
     it('can register helper methods on the client object');
