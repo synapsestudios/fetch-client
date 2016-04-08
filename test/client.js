@@ -196,7 +196,10 @@ describe('client', () => {
 
       const promise = myClient.fetch();
       expect(GLOBAL.fetch).to.not.be.called;
-      return expect(promise).to.be.rejectedWith(MiddlewareError);
+      return expect(promise).to.be.rejected
+        .then(err => {
+          expect(err.name).to.equal('MiddlewareError');
+        });
     });
 
     it('calls multiple middleware in the order they were added', () => {

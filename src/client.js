@@ -1,5 +1,6 @@
 import EventEmitter2 from 'eventemitter2';
 import * as events from './events';
+import MiddlewareError from './middleware-error';
 
 export default class Client {
   constructor(defaults) {
@@ -39,7 +40,7 @@ export default class Client {
           throw err;
         });
     } else {
-      requestPromise = Promise.reject('stopped by middleware');
+      requestPromise = Promise.reject(new MiddlewareError());
     }
 
     return requestPromise;
