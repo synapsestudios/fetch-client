@@ -9,6 +9,11 @@ export default class Client {
     this._middleware = [];
   }
 
+  /**
+   * Loops through middleware calling onStart on all
+   * middlewhere where onStart is defined. When a middleware's
+   * onStart returns false then we stop execution and return false.
+   */
   _callOnStarts(request) {
     let i = 0;
     let mutatedRequest = request;
