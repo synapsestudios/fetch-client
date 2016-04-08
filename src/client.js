@@ -26,10 +26,16 @@ export default class Client {
   fetch(path, options) {
     let request = new Request(path, options);
     this.eventEmitter.emit(events.REQUEST_START, request);
-    request = this._callOnStarts(request);
+
+    let onStartError;
+    try {
+      request = this._callOnStarts(request);
+    } catch (err) {
+      onStartError = err;
+    }
 
     let fetchPromise;
-    if (request) {
+    if (request && !onStartError) {
       fetchPromise = fetch(request)
         .then(response => {
           this.eventEmitter.emit(events.REQUEST_SUCCESS, request, response);
@@ -40,7 +46,8 @@ export default class Client {
           throw err;
         });
     } else {
-      fetchPromise = Promise.reject(new MiddlewareError());
+      const err = onStartError || new MiddlewareError();
+      fetchPromise = Promise.reject(err);
     }
 
     return fetchPromise;
