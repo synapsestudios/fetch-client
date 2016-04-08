@@ -10,9 +10,11 @@ export default class Client {
 
   _callOnStarts(request) {
     let i = 0;
+    let mutatedRequest = request;
+
     while (i < this._middleware.length) {
-      if (this._middleware[0].onStart) {
-        request = this._middleware[0].onStart(request);
+      if (this._middleware[i].onStart) {
+        mutatedRequest = this._middleware[i].onStart(mutatedRequest);
       }
       i += 1;
     }

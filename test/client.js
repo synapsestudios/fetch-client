@@ -118,10 +118,10 @@ describe('client', () => {
 
       return myClient.fetch().then(() => {
         expect(onStart).to.have.been.calledOnce;
-      })
+      });
     });
 
-    it(`doesn't break when onStart is left out`, () => {
+    it('doesn\'t break when onStart is left out', () => {
       GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
       const myClient = new Client();
       const myMiddleware = { arbitrary: 'object' };
@@ -131,7 +131,19 @@ describe('client', () => {
       return expect(promise).to.be.fulfilled;
     });
 
-    it('calls onSubmit with the previous onSubmits return value');
+    it('calls onSubmit with the previous onSubmits return value', () => {
+      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      const onStart1 = sinon.spy((request) => 'test');
+      const onStart2 = sinon.spy((request) => request);
+
+      const myClient = new Client();
+      myClient.addMiddleware({ onStart: onStart1 });
+      myClient.addMiddleware({ onStart: onStart2 });
+
+      myClient.fetch();
+      expect(onStart2).to.have.been.calledWith('test');
+    });
+
     it('can emit custom events');
     it('cancels the request when onStart returns false');
     it('calls multiple middleware in the order they were added');
