@@ -98,6 +98,9 @@ describe('client', () => {
 
       myClient.addMiddleware(myMiddleware);
       myClient.addMiddleware(mySecondMiddleware);
+
+      // add a clone of the second one and make sure it's removed
+      myClient.addMiddleware({ ...mySecondMiddleware });
       myClient.addMiddleware(myThirdMiddleware);
 
       myClient.removeMiddleware('mySecondMiddleware');
