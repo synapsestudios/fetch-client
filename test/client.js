@@ -11,6 +11,7 @@ chai.use(sinonChai);
 import Client from '../lib/client';
 
 import EventEmitter2 from 'eventemitter2';
+import * as events from '../lib/events';
 import { Request, fetch } from 'whatwg-fetch';
 GLOBAL.Request = Request;
 
@@ -25,7 +26,7 @@ describe('client', () => {
 
       const myClient = new Client();
       const cb = sinon.spy();
-      myClient.on('request_start', cb);
+      myClient.on(events.REQUEST_START, cb);
 
       myClient.fetch('http://google.com/', { method: 'get' });
       expect(cb).to.have.been.calledOnce;
@@ -39,7 +40,7 @@ describe('client', () => {
 
       const myClient = new Client();
       const cb = sinon.spy();
-      myClient.on('request_success', cb);
+      myClient.on(events.REQUEST_SUCCESS, cb);
 
       const promise = myClient.fetch('http://google.com/', { method: 'get' });
 
@@ -57,7 +58,7 @@ describe('client', () => {
 
       const myClient = new Client();
       const cb = sinon.spy();
-      myClient.on('request_fail', cb);
+      myClient.on(events.REQUEST_FAIL, cb);
 
       const promise = myClient.fetch('http://google.com/', { method: 'get' });
 
