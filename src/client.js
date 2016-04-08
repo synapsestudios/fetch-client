@@ -5,6 +5,7 @@ export default class Client {
   constructor(defaults) {
     this.defaults = defaults;
     this.eventEmitter = new EventEmitter2();
+    this._middleware = [];
   }
 
   fetch(path, options) {
@@ -20,6 +21,20 @@ export default class Client {
         this.eventEmitter.emit(events.REQUEST_FAIL, request, err);
         throw err;
       });
+  }
+
+  addMiddleware(middleware) {
+    this._middleware.push(middleware);
+  }
+
+  removeMiddleware(name) {
+    let i;
+    for (i = 0; i < this._middleware.length; i++) {
+      if (this._middleware[i].name === name) {
+        this._middleware.splice(i, 1);
+        i -= 1;
+      }
+    }
   }
 
   on(event, cb) {
