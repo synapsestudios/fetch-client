@@ -9,6 +9,7 @@ chai.use(chaiAsPromised);
 chai.use(sinonChai);
 
 import Client from '../lib/client';
+import MiddlewareError from '../lib/middleware-error';
 
 import EventEmitter2 from 'eventemitter2';
 import * as events from '../lib/events';
@@ -179,7 +180,7 @@ describe('client', () => {
       const myClient = new Client();
       myClient.addMiddleware({
         onStart: () => {
-          throw new Error();
+          throw new MiddlewareError();
         },
       });
 
