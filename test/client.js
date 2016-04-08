@@ -164,7 +164,18 @@ describe('client', () => {
       expect(cb).to.have.been.calledOnce;
     });
 
-    it('cancels the request when onStart returns false');
+    it('cancels the request when onStart returns false', () => {
+      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      const myClient = new Client();
+      myClient.addMiddleware({ onStart: () => false });
+
+      const promise = myClient.fetch();
+      expect(GLOBAL.fetch).to.not.be.called;
+      return expect(promise).to.be.rejected;
+    });
+
+    it('cancels the request when onStart throws an error');
+    it('rejects with a custom error object');
     it('calls multiple middleware in the order they were added');
     it('can register helper methods on the client object');
   });

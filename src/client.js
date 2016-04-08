@@ -12,14 +12,14 @@ export default class Client {
     let i = 0;
     let mutatedRequest = request;
 
-    while (i < this._middleware.length) {
+    while (i < this._middleware.length && mutatedRequest) {
       if (this._middleware[i].onStart) {
         mutatedRequest = this._middleware[i].onStart(mutatedRequest);
       }
       i += 1;
     }
 
-    return request;
+    return mutatedRequest;
   }
 
   fetch(path, options) {
@@ -27,15 +27,22 @@ export default class Client {
     this.eventEmitter.emit(events.REQUEST_START, request);
     request = this._callOnStarts(request);
 
-    return fetch(request)
-      .then(response => {
-        this.eventEmitter.emit(events.REQUEST_SUCCESS, request, response);
-        return response;
-      })
-      .catch(err => {
-        this.eventEmitter.emit(events.REQUEST_FAIL, request, err);
-        throw err;
-      });
+    let requestPromise;
+    if (request) {
+      requestPromise = fetch(request)
+        .then(response => {
+          this.eventEmitter.emit(events.REQUEST_SUCCESS, request, response);
+          return response;
+        })
+        .catch(err => {
+          this.eventEmitter.emit(events.REQUEST_FAIL, request, err);
+          throw err;
+        });
+    } else {
+      requestPromise = Promise.reject('stopped by middleware');
+    }
+
+    return requestPromise;
   }
 
   addMiddleware(middleware) {
