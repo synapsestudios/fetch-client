@@ -326,7 +326,26 @@ describe('client', () => {
   });
 
   describe('helpers & defaults', () => {
-    it('prepends default url to fetch path');
+    it('prepends default url to fetch path', () => {
+      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      const myClient = new Client({ url: 'http://something.com/' });
+
+      return myClient.fetch('test').then(() => {
+        expect(GLOBAL.fetch.args[0][0]).to.be.instanceof(Request);
+        expect(GLOBAL.fetch.args[0][0].url).to.equal('http://something.com/test');
+      });
+    });
+
+    it('includes slash in url if omitted', () => {
+      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      const myClient = new Client({ url: 'http://something.com' });
+
+      return myClient.fetch('test').then(() => {
+        expect(GLOBAL.fetch.args[0][0]).to.be.instanceof(Request);
+        expect(GLOBAL.fetch.args[0][0].url).to.equal('http://something.com/test');
+      });
+    });
+
     it('calls get() with method=\'get\' in options');
     it('calls post setting headers, method, body');
     it('calls delete with method=\'delete\' in options');
