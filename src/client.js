@@ -28,6 +28,20 @@ export default class Client {
     return mutatedRequest;
   }
 
+  _callOnSuccesses(request, response) {
+    let i = 0;
+    let mutatedResponse = response;
+
+    while (i < this._middleware.length) {
+      if (this._middleware[i].onSuccess) {
+        mutatedResponse = this._middleware[i].onSuccess(request, mutatedResponse);
+      }
+      i += 1;
+    }
+
+    return mutatedResponse;
+  }
+
   _addHelpers(helpers) {
     if (helpers) {
       Object.keys(helpers).forEach((key) => {
@@ -52,7 +66,8 @@ export default class Client {
       fetchPromise = fetch(request)
         .then(response => {
           this.eventEmitter.emit(events.REQUEST_SUCCESS, request, response);
-          return response;
+          const mutatedResponse = this._callOnSuccesses(request, response);
+          return mutatedResponse;
         })
         .catch(err => {
           this.eventEmitter.emit(events.REQUEST_FAIL, request, err);
