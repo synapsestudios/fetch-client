@@ -183,6 +183,21 @@ describe('client', () => {
         expect(onStart2).to.have.been.calledWith('test');
       });
 
+      it('stops calling onStarts when false returned', () => {
+        GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+        const myClient = new Client();
+
+        const onStart1 = sinon.spy(false);
+        const onStart2 = sinon.spy();
+        myClient.addMiddleware({ onStart: onStart1 });
+        myClient.addMiddleware({ onStart: onStart2 });
+
+        return myClient.fetch().catch(err => {
+          expect(onStart1).to.have.been.calledOnce;
+          expect(onStart2).to.have.callCount(0);
+        });
+      });
+
       it('cancels the request when onStart returns false', () => {
         GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
         const myClient = new Client();
