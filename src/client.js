@@ -9,51 +9,31 @@ export default class Client {
     this._middleware = [];
   }
 
-  /**
-   * Loops through middleware calling onStart on all
-   * middlewhere where onStart is defined. When a middleware's
-   * onStart returns false then we stop execution and return false.
-   */
-  _callOnStarts(request) {
+  _callMiddlewareMethod(method, mutableArgIdx, earlyExit, ...args) {
     let i = 0;
-    let mutatedRequest = request;
 
-    while (i < this._middleware.length && mutatedRequest) {
-      if (this._middleware[i].onStart) {
-        mutatedRequest = this._middleware[i].onStart(mutatedRequest);
+    const shouldContinue = () => (earlyExit ? args[mutableArgIdx] : true);
+
+    while (i < this._middleware.length && shouldContinue()) {
+      if (this._middleware[i][method]) {
+        args[mutableArgIdx] = this._middleware[i][method](...args);
       }
       i += 1;
     }
 
-    return mutatedRequest;
+    return args[mutableArgIdx];
+  }
+
+  _callOnStarts(request) {
+    return this._callMiddlewareMethod('onStart', 0, true, request);
   }
 
   _callOnSuccesses(request, response) {
-    let i = 0;
-    let mutatedResponse = response;
-
-    while (i < this._middleware.length) {
-      if (this._middleware[i].onSuccess) {
-        mutatedResponse = this._middleware[i].onSuccess(request, mutatedResponse);
-      }
-      i += 1;
-    }
-
-    return mutatedResponse;
+    return this._callMiddlewareMethod('onSuccess', 1, false, request, response);
   }
 
   _callOnFails(request, response) {
-    let i = 0;
-    let mutatedResponse = response;
-
-    while (i < this._middleware.length) {
-      if (this._middleware[i].onFail) {
-        mutatedResponse = this._middleware[i].onFail(request, mutatedResponse);
-      }
-      i += 1;
-    }
-
-    return mutatedResponse;
+    return this._callMiddlewareMethod('onFail', 1, false, request, response);
   }
 
   _addHelpers(helpers) {
