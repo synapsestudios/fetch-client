@@ -4,7 +4,11 @@ import MiddlewareError from './middleware-error';
 
 export default class Client {
   constructor(defaults) {
-    this.defaults = defaults;
+    this.defaults = defaults || {};
+    if (this.defaults.url) {
+      this.defaults.sep = this.defaults.url[this.defaults.url.length - 1] === '/' ? '' : '/';
+    }
+
     this.eventEmitter = new EventEmitter2();
     this._middleware = [];
   }
@@ -45,7 +49,12 @@ export default class Client {
   }
 
   fetch(path, options) {
-    let request = new Request(path, options);
+    let fullPath = path;
+    if (this.defaults && this.defaults.url) {
+      fullPath = `${this.defaults.url}${this.defaults.sep}${path}`;
+    }
+
+    let request = new Request(fullPath, options);
     this.eventEmitter.emit(events.REQUEST_START, request);
 
     let onStartError;
