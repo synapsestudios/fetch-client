@@ -266,7 +266,7 @@ describe('client', () => {
         const myMiddleware = { onSuccess: sinon.spy(), onFail: sinon.spy() };
         myClient.addMiddleware(myMiddleware);
 
-        return myClient.fetch().then(() => {
+        return myClient.fetch().catch((err) => {
           expect(myMiddleware.onSuccess).to.have.callCount(0);
         });
       });
@@ -279,7 +279,7 @@ describe('client', () => {
         const myMiddleware = { onFail: sinon.spy() };
         myClient.addMiddleware(myMiddleware);
 
-        return myClient.fetch().then(() => {
+        return myClient.fetch().catch(() => {
           expect(myMiddleware.onFail).to.have.been.calledOnce;
         });
       });
@@ -290,7 +290,7 @@ describe('client', () => {
         const myMiddleware = { onFail: sinon.spy() };
         myClient.addMiddleware(myMiddleware);
 
-        return myClient.fetch().then(() => {
+        return myClient.fetch().catch(() => {
           expect(myMiddleware.onFail.args[0][0]).to.be.instanceof(Request);
           expect(myMiddleware.onFail.args[0][1]).to.equal('test');
         });
