@@ -235,5 +235,17 @@ describe('client', () => {
         expect(onStart2).to.be.calledBefore(onStart3);
       });
     });
+
+    describe('onSuccess functionality', () => {
+      it('calls onSuccess when a request succeeds');
+      it('passes request and response to onSuccess');
+      it('does not call onSuccess when a request fails');
+    });
+
+    describe('onFail functionality', () => {
+      it('calls onFail when a request fails');
+      it('passes request and error to onFail');
+      it('does not call onFail when a request succeeds');
+    });
   });
 });
