@@ -324,4 +324,14 @@ describe('client', () => {
       });
     });
   });
+
+  describe('helpers & defaults', () => {
+    it('prepends default url to fetch path');
+    it('calls get() with method=\'get\' in options');
+    it('calls post setting headers, method, body');
+    it('calls delete with method=\'delete\' in options');
+    it('calls patch with headers, method, body');
+    it('calls put with headers, method, body');
+    it('calls upload with headers, method, body');
+  });
 });
