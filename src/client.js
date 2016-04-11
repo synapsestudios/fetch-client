@@ -104,4 +104,29 @@ export default class Client {
   on(event, cb) {
     this.eventEmitter.on(event, cb);
   }
+
+  /* ---- HELPERS ---- */
+  get(path, options) {
+
+  }
+
+  post(path, body, options) {
+
+  }
+
+  put(path, body, options) {
+
+  }
+
+  path(path, body, options) {
+
+  }
+
+  delete(path, options) {
+
+  }
+
+  upload(path, file, options) {
+
+  }
 }
