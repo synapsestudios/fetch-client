@@ -10,13 +10,18 @@
     "test": "npm run build && mocha --compilers js:babel-register",
     "clean": "rm -rf dist",
     "build": "npm run clean && babel src --out-dir lib",
+<<<<<<< Updated upstream
     "lint": "eslint src"
+=======
+    "lint": "eslint src",
+    "prepublish": "npm run lint && npm test"
+>>>>>>> Stashed changes
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/synapsestudios/synapi-client.git"
   },
-  "author": "Aaron Bruce <aaron@synapsestudios.com> (synapsestudios.com)",
+  "author": "Synapse Studios",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/synapsestudios/synapi-client/issues"
