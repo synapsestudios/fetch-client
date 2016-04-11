@@ -29,11 +29,12 @@ describe('client', () => {
       const cb = sinon.spy();
       myClient.on(events.REQUEST_START, cb);
 
-      myClient.fetch('http://google.com/', { method: 'get' });
-      expect(cb).to.have.been.calledOnce;
-      expect(cb.args[0][0]).to.be.instanceof(Request);
-      expect(cb.args[0][0]).to.have.property('url', 'http://google.com/');
-      expect(cb.args[0][0]).to.have.property('method', 'GET');
+      return myClient.fetch('http://google.com/', { method: 'get' }).then(() => {
+        expect(cb).to.have.been.calledOnce;
+        expect(cb.args[0][0]).to.be.instanceof(Request);
+        expect(cb.args[0][0]).to.have.property('url', 'http://google.com/');
+        expect(cb.args[0][0]).to.have.property('method', 'GET');
+      });
     });
 
     it('should emit success event', () => {
