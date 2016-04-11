@@ -42,6 +42,20 @@ export default class Client {
     return mutatedResponse;
   }
 
+  _callOnFails(request, response) {
+    let i = 0;
+    let mutatedResponse = response;
+
+    while (i < this._middleware.length) {
+      if (this._middleware[i].onFail) {
+        mutatedResponse = this._middleware[i].onFail(request, mutatedResponse);
+      }
+      i += 1;
+    }
+
+    return mutatedResponse;
+  }
+
   _addHelpers(helpers) {
     if (helpers) {
       Object.keys(helpers).forEach((key) => {
@@ -65,13 +79,14 @@ export default class Client {
     if (request && !onStartError) {
       fetchPromise = fetch(request)
         .then(response => {
-          this.eventEmitter.emit(events.REQUEST_SUCCESS, request, response);
           const mutatedResponse = this._callOnSuccesses(request, response);
+          this.eventEmitter.emit(events.REQUEST_SUCCESS, request, mutatedResponse);
           return mutatedResponse;
         })
         .catch(err => {
-          this.eventEmitter.emit(events.REQUEST_FAIL, request, err);
-          throw err;
+          const mutatedError = this._callOnFails(request, err);
+          this.eventEmitter.emit(events.REQUEST_FAIL, request, mutatedError);
+          throw mutatedError;
         });
     } else {
       const err = onStartError || new MiddlewareError();
