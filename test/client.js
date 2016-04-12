@@ -378,7 +378,25 @@ describe('client', () => {
       });
     });
 
-    it('overrides defaults when calling post with options');
+    it('overrides defaults when calling post with options', () => {
+      const myClient = new Client({ url: 'http://something.com' });
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.post(
+        'test',
+        { something: 'test' },
+        { method: 'notallowed', headers: { Accept: 'test' }, anotherThing: 'cool' }
+      )
+        .then(() => {
+          expect(myClient.fetch.args[0][1].method).to.equal('post');
+          expect(myClient.fetch.args[0][1].headers).to.deep.equal({
+            Accept: 'test',
+            'Content-Type': 'application/json',
+          });
+          expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
+        });
+    });
+
     it('uses post defaults from main defaults object');
     it('calls delete with method=\'delete\' in options');
     it('calls patch with headers, method, body');
