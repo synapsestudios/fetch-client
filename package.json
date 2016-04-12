@@ -7,9 +7,11 @@
     "test": "test"
   },
   "scripts": {
-    "test": "npm run build && mocha --compilers js:babel-register",
+    "test": "npm run build && npm run test:built",
+    "test:built": "mocha --compilers js:babel-register",
     "clean": "rm -rf dist",
     "build": "npm run clean && babel src --out-dir lib",
+    "build:watch": "npm run clean && babel src --out-dir lib --watch",
     "lint": "eslint src",
     "prepublish": "npm run lint && npm test"
   },
