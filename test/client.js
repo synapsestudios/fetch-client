@@ -346,7 +346,24 @@ describe('client', () => {
       });
     });
 
-    it('calls get() with method=\'get\' in options');
+    it('calls fetch() with method=\'get\' in options when calling get()', () => {
+      const myClient = new Client({ url: 'http://something.com' });
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.get('test').then(() => {
+        expect(myClient.fetch.args[0][1].method).to.equal('get');
+      });
+    });
+
+    it('calls fetch() with passed options when calling get()', () => {
+      const myClient = new Client({ url: 'http://something.com' });
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.get('test', { something: 'test' }).then(() => {
+        expect(myClient.fetch.args[0][1].something).to.equal('test');
+      });
+    });
+
     it('calls post setting headers, method, body');
     it('calls delete with method=\'delete\' in options');
     it('calls patch with headers, method, body');
