@@ -364,7 +364,22 @@ describe('client', () => {
       });
     });
 
-    it('calls post setting headers, method, body');
+    it('calls fetch setting headers, method, body when calling post', () => {
+      const myClient = new Client({ url: 'http://something.com' });
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.post('test', { something: 'test' }).then(() => {
+        expect(myClient.fetch.args[0][1].method).to.equal('post');
+        expect(myClient.fetch.args[0][1].headers).to.deep.equal({
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        });
+        expect(myClient.fetch.args[0][1].body).to.equal(JSON.stringify({ something: 'test' }));
+      });
+    });
+
+    it('overrides defaults when calling post with options');
+    it('uses post defaults from main defaults object');
     it('calls delete with method=\'delete\' in options');
     it('calls patch with headers, method, body');
     it('calls put with headers, method, body');
