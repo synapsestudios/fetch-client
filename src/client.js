@@ -107,7 +107,9 @@ export default class Client {
 
   /* ---- HELPERS ---- */
   get(path, options) {
-    return this.fetch(path, options);
+    const _options = options || {};
+    _options.method = 'get';
+    return this.fetch(path, _options);
   }
 
   post(path, body, options) {
