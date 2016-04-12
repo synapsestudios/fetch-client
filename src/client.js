@@ -1,10 +1,22 @@
 import EventEmitter2 from 'eventemitter2';
 import * as events from './events';
 import MiddlewareError from './middleware-error';
+import merge from 'merge';
+
+const _defaults = {
+  post: {
+    method: 'post',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+  },
+};
 
 export default class Client {
   constructor(defaults) {
-    this.defaults = defaults || {};
+    this.defaults = merge.recursive(true, _defaults, defaults);
+
     if (this.defaults.url) {
       this.defaults.sep = this.defaults.url[this.defaults.url.length - 1] === '/' ? '' : '/';
     }
@@ -113,7 +125,11 @@ export default class Client {
   }
 
   post(path, body, options) {
-    return this.fetch(path, options);
+    let _options = { ...this.defaults.post };
+    _options.body = JSON.stringify(body);
+    _options = merge.recursive(true, _options, options);
+    _options.method = 'post';
+    return this.fetch(path, _options);
   }
 
   put(path, body, options) {
