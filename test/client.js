@@ -13,7 +13,7 @@ import MiddlewareError from '../lib/middleware-error';
 
 import EventEmitter2 from 'eventemitter2';
 import * as events from '../lib/events';
-import { Request, fetch } from 'whatwg-fetch';
+import { Request } from 'whatwg-fetch';
 GLOBAL.Request = Request;
 
 describe('client', () => {
