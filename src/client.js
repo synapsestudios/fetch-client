@@ -107,26 +107,26 @@ export default class Client {
 
   /* ---- HELPERS ---- */
   get(path, options) {
-
+    return this.fetch(path, options);
   }
 
   post(path, body, options) {
-
+    return this.fetch(path, options);
   }
 
   put(path, body, options) {
-
+    return this.fetch(path, options);
   }
 
   path(path, body, options) {
-
+    return this.fetch(path, options);
   }
 
   delete(path, options) {
-
+    return this.fetch(path, options);
   }
 
   upload(path, file, options) {
-
+    return this.fetch(path, options);
   }
 }
