@@ -2,38 +2,7 @@ import EventEmitter2 from 'eventemitter2';
 import * as events from './events';
 import MiddlewareError from './middleware-error';
 import merge from 'merge';
-
-const allowedEncodings = [
-  'json',
-  'text',
-  'form-data',
-  'x-www-form-urlencoded',
-];
-
-const _defaults = {
-  encoding: 'json',
-  post: {
-    method: 'post',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-  },
-  put: {
-    method: 'post',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-  },
-  patch: {
-    method: 'post',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-  },
-};
+import { defaults as _defaults, allowedEncodings } from './defaults';
 
 export default class Client {
   constructor(defaults) {
