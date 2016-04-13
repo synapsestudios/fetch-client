@@ -92,7 +92,6 @@ export default class Client {
 
     let fetchPromise;
     if (request && !onStartError) {
-      console.log(request);
       fetchPromise = fetch(request)
         .then(response => {
           const mutatedResponse = this._callOnSuccesses(request, response);
