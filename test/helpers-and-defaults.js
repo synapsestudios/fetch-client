@@ -13,6 +13,8 @@ import Client from '../lib/client';
 // polyfills
 import { Request, Response } from 'whatwg-fetch';
 GLOBAL.Request = Request;
+import FormData from 'form-data';
+import URLSearchParams from 'urlsearchparams';
 
 describe('helpers & defaults', () => {
   describe('defaults', () => {
