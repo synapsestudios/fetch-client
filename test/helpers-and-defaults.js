@@ -17,6 +17,7 @@ import * as events from '../lib/events';
 // polyfills
 import { Request, Response } from 'whatwg-fetch';
 GLOBAL.Request = Request;
+
 describe('helpers & defaults', () => {
   it('prepends default url to fetch path', () => {
     GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
@@ -38,121 +39,123 @@ describe('helpers & defaults', () => {
     });
   });
 
-  it('calls fetch() with method=\'get\' in options when calling get()', () => {
-    const myClient = new Client({ url: 'http://something.com' });
-    myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+  describe('helper basics', () => {
+    it('calls fetch() with method=\'get\' in options when calling get()', () => {
+      const myClient = new Client({ url: 'http://something.com' });
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
-    return myClient.get('test').then(() => {
-      expect(myClient.fetch.args[0][1].method).to.equal('get');
-    });
-  });
-
-  it('calls fetch() with passed options when calling get()', () => {
-    const myClient = new Client({ url: 'http://something.com' });
-    myClient.fetch = sinon.spy(() => Promise.resolve('test'));
-
-    return myClient.get('test', { something: 'test' }).then(() => {
-      expect(myClient.fetch.args[0][1].something).to.equal('test');
-    });
-  });
-
-  it('calls fetch setting headers, method, body when calling post', () => {
-    const myClient = new Client({ url: 'http://something.com' });
-    myClient.fetch = sinon.spy(() => Promise.resolve('test'));
-
-    return myClient.post('test', { something: 'test' }).then(() => {
-      expect(myClient.fetch.args[0][1].method).to.equal('post');
-      expect(myClient.fetch.args[0][1].headers).to.deep.equal({
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
+      return myClient.get('test').then(() => {
+        expect(myClient.fetch.args[0][1].method).to.equal('get');
       });
-      expect(myClient.fetch.args[0][1].body).to.equal(JSON.stringify({ something: 'test' }));
     });
-  });
 
-  it('overrides defaults when calling post with options', () => {
-    const myClient = new Client({ url: 'http://something.com' });
-    myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+    it('calls fetch() with passed options when calling get()', () => {
+      const myClient = new Client({ url: 'http://something.com' });
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
-    return myClient.post(
-      'test',
-      { something: 'test' },
-      { method: 'notallowed', headers: { Accept: 'test' }, anotherThing: 'cool' }
-    )
-      .then(() => {
+      return myClient.get('test', { something: 'test' }).then(() => {
+        expect(myClient.fetch.args[0][1].something).to.equal('test');
+      });
+    });
+
+    it('calls fetch setting headers, method, body when calling post', () => {
+      const myClient = new Client({ url: 'http://something.com' });
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.post('test', { something: 'test' }).then(() => {
         expect(myClient.fetch.args[0][1].method).to.equal('post');
         expect(myClient.fetch.args[0][1].headers).to.deep.equal({
-          Accept: 'test',
+          Accept: 'application/json',
           'Content-Type': 'application/json',
         });
-        expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
+        expect(myClient.fetch.args[0][1].body).to.equal(JSON.stringify({ something: 'test' }));
       });
-  });
-
-  it('uses post defaults from main defaults object', () => {
-    const myClient = new Client({
-      url: 'http://something.com',
-      post: { method: 'notallowed', headers: { Accept: 'test' }, anotherThing: 'cool' },
     });
 
-    myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+    it('overrides defaults when calling post with options', () => {
+      const myClient = new Client({ url: 'http://something.com' });
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
-    return myClient.post('test', { something: 'test' })
-      .then(() => {
-        expect(myClient.fetch.args[0][1].method).to.equal('post');
-        expect(myClient.fetch.args[0][1].headers).to.deep.equal({
-          Accept: 'test',
-          'Content-Type': 'application/json',
+      return myClient.post(
+        'test',
+        { something: 'test' },
+        { method: 'notallowed', headers: { Accept: 'test' }, anotherThing: 'cool' }
+      )
+        .then(() => {
+          expect(myClient.fetch.args[0][1].method).to.equal('post');
+          expect(myClient.fetch.args[0][1].headers).to.deep.equal({
+            Accept: 'test',
+            'Content-Type': 'application/json',
+          });
+          expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
         });
-        expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
+    });
+
+    it('uses post defaults from main defaults object', () => {
+      const myClient = new Client({
+        url: 'http://something.com',
+        post: { method: 'notallowed', headers: { Accept: 'test' }, anotherThing: 'cool' },
       });
-  });
 
-  it('calls delete with method=\'delete\' in options', () => {
-    const myClient = new Client({ url: 'http://something.com' });
-    myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
-    return myClient.delete('test').then(() => {
-      expect(myClient.fetch.args[0][1].method).to.equal('delete');
-      expect(myClient.fetch.args[0][0]).to.equal('test');
-    });
-  });
-
-  it('calls patch with headers, method, body', () => {
-    const myClient = new Client({
-      url: 'http://something.com',
-      put: { method: 'notallowed', headers: { Accept: 'test' }, anotherThing: 'cool' },
-    });
-
-    myClient.fetch = sinon.spy(() => Promise.resolve('test'));
-
-    return myClient.put('test', { something: 'test' })
-      .then(() => {
-        expect(myClient.fetch.args[0][1].method).to.equal('put');
-        expect(myClient.fetch.args[0][1].headers).to.deep.equal({
-          Accept: 'test',
-          'Content-Type': 'application/json',
+      return myClient.post('test', { something: 'test' })
+        .then(() => {
+          expect(myClient.fetch.args[0][1].method).to.equal('post');
+          expect(myClient.fetch.args[0][1].headers).to.deep.equal({
+            Accept: 'test',
+            'Content-Type': 'application/json',
+          });
+          expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
         });
-        expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
-      });
-  });
-
-  it('calls put with headers, method, body', () => {
-    const myClient = new Client({
-      url: 'http://something.com',
-      patch: { method: 'notallowed', headers: { Accept: 'test' }, anotherThing: 'cool' },
     });
 
-    myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+    it('calls delete with method=\'delete\' in options', () => {
+      const myClient = new Client({ url: 'http://something.com' });
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
-    return myClient.patch('test', { something: 'test' })
-      .then(() => {
-        expect(myClient.fetch.args[0][1].method).to.equal('patch');
-        expect(myClient.fetch.args[0][1].headers).to.deep.equal({
-          Accept: 'test',
-          'Content-Type': 'application/json',
-        });
-        expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
+      return myClient.delete('test').then(() => {
+        expect(myClient.fetch.args[0][1].method).to.equal('delete');
+        expect(myClient.fetch.args[0][0]).to.equal('test');
       });
+    });
+
+    it('calls patch with headers, method, body', () => {
+      const myClient = new Client({
+        url: 'http://something.com',
+        put: { method: 'notallowed', headers: { Accept: 'test' }, anotherThing: 'cool' },
+      });
+
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.put('test', { something: 'test' })
+        .then(() => {
+          expect(myClient.fetch.args[0][1].method).to.equal('put');
+          expect(myClient.fetch.args[0][1].headers).to.deep.equal({
+            Accept: 'test',
+            'Content-Type': 'application/json',
+          });
+          expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
+        });
+    });
+
+    it('calls put with headers, method, body', () => {
+      const myClient = new Client({
+        url: 'http://something.com',
+        patch: { method: 'notallowed', headers: { Accept: 'test' }, anotherThing: 'cool' },
+      });
+
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.patch('test', { something: 'test' })
+        .then(() => {
+          expect(myClient.fetch.args[0][1].method).to.equal('patch');
+          expect(myClient.fetch.args[0][1].headers).to.deep.equal({
+            Accept: 'test',
+            'Content-Type': 'application/json',
+          });
+          expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
+        });
+    });
   });
 });
