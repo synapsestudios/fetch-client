@@ -7,9 +7,11 @@
     "test": "test"
   },
   "scripts": {
-    "test": "npm run build && mocha --compilers js:babel-register",
+    "test": "npm run build && npm run test:built",
+    "test:built": "mocha --compilers js:babel-register",
     "clean": "rm -rf dist",
     "build": "npm run clean && babel src --out-dir lib",
+    "build:watch": "npm run clean && babel src --out-dir lib --watch",
     "lint": "eslint src",
     "prepublish": "npm run lint && npm test"
   },
@@ -37,9 +39,11 @@
     "estraverse-fb": "^1.3.1",
     "mocha": "^2.4.5",
     "sinon": "^1.17.3",
-    "sinon-chai": "^2.8.0"
+    "sinon-chai": "^2.8.0",
+    "whatwg-fetch": "^0.11.0"
   },
   "dependencies": {
-    "eventemitter2": "^1.0.0"
+    "eventemitter2": "^1.0.0",
+    "merge": "^1.2.0"
   }
 }

@@ -1,10 +1,40 @@
 import EventEmitter2 from 'eventemitter2';
 import * as events from './events';
 import MiddlewareError from './middleware-error';
+import merge from 'merge';
+
+const _defaults = {
+  post: {
+    method: 'post',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+  },
+  put: {
+    method: 'post',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+  },
+  patch: {
+    method: 'post',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+  },
+};
 
 export default class Client {
   constructor(defaults) {
-    this.defaults = defaults;
+    this.defaults = merge.recursive(true, _defaults, defaults);
+
+    if (this.defaults.url) {
+      this.defaults.sep = this.defaults.url[this.defaults.url.length - 1] === '/' ? '' : '/';
+    }
+
     this.eventEmitter = new EventEmitter2();
     this._middleware = [];
   }
@@ -48,7 +78,12 @@ export default class Client {
   }
 
   fetch(path, options) {
-    let request = new Request(path, options);
+    let fullPath = path;
+    if (this.defaults && this.defaults.url) {
+      fullPath = `${this.defaults.url}${this.defaults.sep}${path}`;
+    }
+
+    let request = new Request(fullPath, options);
     this.eventEmitter.emit(events.REQUEST_START, request);
 
     let onStartError;
@@ -104,5 +139,42 @@ export default class Client {
 
   on(event, cb) {
     this.eventEmitter.on(event, cb);
+  }
+
+  /* ---- HELPERS ---- */
+  get(path, options) {
+    const _options = options || {};
+    _options.method = 'get';
+    return this.fetch(path, _options);
+  }
+
+  post(path, body, options) {
+    let _options = { ...this.defaults.post };
+    _options.body = JSON.stringify(body);
+    _options = merge.recursive(true, _options, options);
+    _options.method = 'post';
+    return this.fetch(path, _options);
+  }
+
+  put(path, body, options) {
+    let _options = { ...this.defaults.put };
+    _options.body = JSON.stringify(body);
+    _options = merge.recursive(true, _options, options);
+    _options.method = 'put';
+    return this.fetch(path, _options);
+  }
+
+  patch(path, body, options) {
+    let _options = { ...this.defaults.patch };
+    _options.body = JSON.stringify(body);
+    _options = merge.recursive(true, _options, options);
+    _options.method = 'patch';
+    return this.fetch(path, _options);
+  }
+
+  delete(path, options) {
+    const _options = options || {};
+    _options.method = 'delete';
+    return this.fetch(path, _options);
   }
 }
