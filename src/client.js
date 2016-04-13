@@ -141,7 +141,9 @@ export default class Client {
   }
 
   delete(path, options) {
-    return this.fetch(path, options);
+    const _options = options || {};
+    _options.method = 'delete';
+    return this.fetch(path, _options);
   }
 
   upload(path, file, options) {
