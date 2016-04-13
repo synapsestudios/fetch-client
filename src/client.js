@@ -11,6 +11,20 @@ const _defaults = {
       'Content-Type': 'application/json',
     },
   },
+  put: {
+    method: 'post',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+  },
+  patch: {
+    method: 'post',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+  },
 };
 
 export default class Client {
@@ -133,11 +147,19 @@ export default class Client {
   }
 
   put(path, body, options) {
-    return this.fetch(path, options);
+    let _options = { ...this.defaults.put };
+    _options.body = JSON.stringify(body);
+    _options = merge.recursive(true, _options, options);
+    _options.method = 'put';
+    return this.fetch(path, _options);
   }
 
-  path(path, body, options) {
-    return this.fetch(path, options);
+  patch(path, body, options) {
+    let _options = { ...this.defaults.patch };
+    _options.body = JSON.stringify(body);
+    _options = merge.recursive(true, _options, options);
+    _options.method = 'patch';
+    return this.fetch(path, _options);
   }
 
   delete(path, options) {
