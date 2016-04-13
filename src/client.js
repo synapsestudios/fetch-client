@@ -177,18 +177,4 @@ export default class Client {
     _options.method = 'delete';
     return this.fetch(path, _options);
   }
-
-  upload(path, input, options) {
-    const _options = options || {};
-    _options.method = 'post';
-
-    const data = new FormData();
-    let i;
-    for (i = 0; i < input.files.length; i++) {
-      data.append('files[]', input.files[i]);
-    }
-
-    _options.body = data;
-    return this.fetch(path, _options);
-  }
 }

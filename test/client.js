@@ -16,9 +16,7 @@ import * as events from '../lib/events';
 
 // polyfills
 import { Request, Response } from 'whatwg-fetch';
-import FormData from 'form-data';
 GLOBAL.Request = Request;
-GLOBAL.FormData = FormData;
 
 describe('client', () => {
   it('should not fail to instantiate', () => {
@@ -500,23 +498,6 @@ describe('client', () => {
           });
           expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
         });
-    });
-
-    it('calls upload with headers, method, body', () => {
-      FormData.prototype.append = sinon.spy();
-      const myClient = new Client({ url: 'http://something.com' });
-      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
-
-      const input = {
-        files: ['test', 'hey'],
-      };
-
-      return myClient.upload('test', input).then(() => {
-        expect(myClient.fetch.args[0][1].method).to.equal('post');
-        expect(FormData.prototype.append).to.be.calledTwice;
-        expect(FormData.prototype.append).to.have.been.calledWith('files[]', 'test');
-        expect(FormData.prototype.append).to.have.been.calledWith('files[]', 'hey');
-      });
     });
   });
 });
