@@ -189,6 +189,7 @@ describe('helpers & defaults', () => {
 
           myClient[method]('path', body);
           expect(myClient.fetch).to.have.been.calledWith(body);
+          expect(myClient.fetch.args[0][2].headers['Content-Type']).to.be.undefined;
         });
 
         it('does not set content type header when body is URLSearchParams');
