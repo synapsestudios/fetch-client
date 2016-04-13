@@ -9,10 +9,6 @@ chai.use(chaiAsPromised);
 chai.use(sinonChai);
 
 import Client from '../lib/client';
-import MiddlewareError from '../lib/middleware-error';
-
-import EventEmitter2 from 'eventemitter2';
-import * as events from '../lib/events';
 
 // polyfills
 import { Request, Response } from 'whatwg-fetch';
@@ -38,6 +34,16 @@ describe('helpers & defaults', () => {
         expect(GLOBAL.fetch.args[0][0]).to.be.instanceof(Request);
         expect(GLOBAL.fetch.args[0][0].url).to.equal('http://something.com/test');
       });
+    });
+
+    it('allows encoding to be set', () => {
+      const cb = () => new Client({ encoding: 'form-data' });
+      expect(cb).to.not.throw(Error);
+    });
+
+    it('throws an error if encoding is not valid', () => {
+      const cb = () => new Client({ encoding: 'not-valid' });
+      expect(cb).to.throw(Error);
     });
   });
 
