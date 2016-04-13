@@ -170,7 +170,28 @@ describe('helpers & defaults', () => {
   });
 
   describe('encoding', () => {
-    it('does not set content type header when body is FormData');
+    it('does not set content type header when body is FormData', () => {
+      const myClient = new Client();
+      const putSpy = sinon.spy();
+      const postSpy = sinon.spy();
+      const patchSpy = sinon.spy();
+
+      const body = new FormData();
+      body.append('x', 'y');
+
+      myClient.fetch = postSpy;
+      myClient.post('path', body);
+      expect(postSpy).to.have.been.calledWith(body);
+
+      myClient.fetch = putSpy;
+      myClient.put('path', body);
+      expect(putSpy).to.have.been.calledWith(body);
+
+      myClient.fetch = patchSpy;
+      myClient.patch('path', body);
+      expect(patchSpy).to.have.been.calledWith(body);
+    });
+
     it('does not set content type header when body is URLSearchParams');
 
     it('sets content type to application/json and json encodes when encoding is json');
