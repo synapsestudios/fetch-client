@@ -192,7 +192,17 @@ describe('helpers & defaults', () => {
           expect(myClient.fetch.args[0][2].headers['Content-Type']).to.be.undefined;
         });
 
-        it('does not set content type header when body is URLSearchParams');
+        it('does not set content type header when body is URLSearchParams', () => {
+          const myClient = new Client();
+          myClient.fetch = sinon.spy();
+
+          const body = new URLSearchParams();
+          body.append('x', 'y');
+
+          myClient[method]('path', body);
+          expect(myClient.fetch).to.have.been.calledWith(body);
+          expect(myClient.fetch.args[0][2].headers['Content-Type']).to.be.undefined;
+        });
       });
 
       describe('encode based on default encoding', () => {
