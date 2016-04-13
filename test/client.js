@@ -310,38 +310,38 @@ describe('client', () => {
       });
     });
 
-    describe('onFail functionality', () => {
-      it('calls onFail when a request fails', () => {
+    describe('onError functionality', () => {
+      it('calls onError when a request fails', () => {
         GLOBAL.fetch = sinon.spy(() => Promise.reject('test'));
         const myClient = new Client();
-        const myMiddleware = { onFail: sinon.spy() };
+        const myMiddleware = { onError: sinon.spy() };
         myClient.addMiddleware(myMiddleware);
 
         return myClient.fetch().catch(() => {
-          expect(myMiddleware.onFail).to.have.been.calledOnce;
+          expect(myMiddleware.onError).to.have.been.calledOnce;
         });
       });
 
-      it('passes request and error to onFail', () => {
+      it('passes request and error to onError', () => {
         GLOBAL.fetch = sinon.spy(() => Promise.reject('test'));
         const myClient = new Client();
-        const myMiddleware = { onFail: sinon.spy() };
+        const myMiddleware = { onError: sinon.spy() };
         myClient.addMiddleware(myMiddleware);
 
         return myClient.fetch().catch(() => {
-          expect(myMiddleware.onFail.args[0][0]).to.be.instanceof(Request);
-          expect(myMiddleware.onFail.args[0][1]).to.equal('test');
+          expect(myMiddleware.onError.args[0][0]).to.be.instanceof(Request);
+          expect(myMiddleware.onError.args[0][1]).to.equal('test');
         });
       });
 
-      it('does not call onFail when a request succeeds', () => {
+      it('does not call onError when a request succeeds', () => {
         GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
         const myClient = new Client();
-        const myMiddleware = { onSuccess: sinon.spy(), onFail: sinon.spy() };
+        const myMiddleware = { onSuccess: sinon.spy(), onError: sinon.spy() };
         myClient.addMiddleware(myMiddleware);
 
         return myClient.fetch().then(() => {
-          expect(myMiddleware.onFail).to.have.callCount(0);
+          expect(myMiddleware.onError).to.have.callCount(0);
         });
       });
     });
