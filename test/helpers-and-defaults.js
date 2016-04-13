@@ -12,9 +12,12 @@ import Client from '../lib/client';
 
 // polyfills
 import { Request, Response } from 'whatwg-fetch';
-GLOBAL.Request = Request;
 import FormData from 'form-data';
 import URLSearchParams from 'urlsearchparams';
+
+GLOBAL.Request = Request;
+GLOBAL.FormData = FormData;
+GLOBAL.URLSearchParams = URLSearchParams;
 
 describe('helpers & defaults', () => {
   describe('defaults', () => {
@@ -169,39 +172,35 @@ describe('helpers & defaults', () => {
     });
   });
 
-  describe('encoding', () => {
-    it('does not set content type header when body is FormData', () => {
-      const myClient = new Client();
-      const putSpy = sinon.spy();
-      const postSpy = sinon.spy();
-      const patchSpy = sinon.spy();
+  const methods = ['put', 'post', 'patch'];
+  let i = 0;
 
-      const body = new FormData();
-      body.append('x', 'y');
+  for (i; i < methods.length; i++) {
+    const method = methods[i];
 
-      myClient.fetch = postSpy;
-      myClient.post('path', body);
-      expect(postSpy).to.have.been.calledWith(body);
+    describe(`encoding: ${method.toUpperCase()}`, () => {
+      it('does not set content type header when body is FormData', () => {
+        const myClient = new Client();
+        myClient.fetch = sinon.spy();
 
-      myClient.fetch = putSpy;
-      myClient.put('path', body);
-      expect(putSpy).to.have.been.calledWith(body);
+        const body = new FormData();
+        body.append('x', 'y');
 
-      myClient.fetch = patchSpy;
-      myClient.patch('path', body);
-      expect(patchSpy).to.have.been.calledWith(body);
+        myClient[method]('path', body);
+        expect(myClient.fetch).to.have.been.calledWith(body);
+      });
+
+      it('does not set content type header when body is URLSearchParams');
+
+      it('sets content type to application/json and json encodes when encoding is json');
+      it('sets content type to text/plain and does nothing to body when encoding is text');
+      it('encodes body as FormData when encoding is form-data');
+      it('encodes body as URLSearchParams when encoding is x-www-form-urlencoded');
+
+      it('sends FormData in body Content-Type is form-data');
+      it('sends URLSearchParams Content-Type is x-www-form-urlencoded');
+      it('sends a JSON string when Content-Type is application/json');
+      it('does nothing to body when Content-type is text/*');
     });
-
-    it('does not set content type header when body is URLSearchParams');
-
-    it('sets content type to application/json and json encodes when encoding is json');
-    it('sets content type to text/plain and does nothing to body when encoding is text');
-    it('encodes body as FormData when encoding is form-data');
-    it('encodes body as URLSearchParams when encoding is x-www-form-urlencoded');
-
-    it('sends FormData in body Content-Type is form-data');
-    it('sends URLSearchParams Content-Type is x-www-form-urlencoded');
-    it('sends a JSON string when Content-Type is application/json');
-    it('does nothing to body when Content-type is text/*');
-  });
+  }
 });
