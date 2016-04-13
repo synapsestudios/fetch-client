@@ -3,7 +3,15 @@ import * as events from './events';
 import MiddlewareError from './middleware-error';
 import merge from 'merge';
 
+const allowedEncodings = [
+  'json',
+  'text',
+  'form-data',
+  'x-www-form-urlencoded',
+];
+
 const _defaults = {
+  encoding: 'json',
   post: {
     method: 'post',
     headers: {
@@ -29,6 +37,10 @@ const _defaults = {
 
 export default class Client {
   constructor(defaults) {
+    if (defaults && defaults.encoding && allowedEncodings.indexOf(defaults.encoding) === -1) {
+      throw new Error(`${defaults.encoding} is not an allowed encoding value.`);
+    }
+
     this.defaults = merge.recursive(true, _defaults, defaults);
 
     if (this.defaults.url) {
