@@ -166,4 +166,19 @@ describe('helpers & defaults', () => {
         });
     });
   });
+
+  describe('encoding', () => {
+    it('does not set content type header when body is FormData');
+    it('does not set content type header when body is URLSearchParams');
+
+    it('sets content type to application/json and json encodes when encoding is json');
+    it('sets content type to text/plain and does nothing to body when encoding is text');
+    it('encodes body as FormData when encoding is form-data');
+    it('encodes body as URLSearchParams when encoding is x-www-form-urlencoded');
+
+    it('sends FormData in body Content-Type is form-data');
+    it('sends URLSearchParams Content-Type is x-www-form-urlencoded');
+    it('sends a JSON string when Content-Type is application/json');
+    it('does nothing to body when Content-type is text/*');
+  });
 });
