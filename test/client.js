@@ -416,7 +416,16 @@ describe('client', () => {
         });
     });
 
-    it('calls delete with method=\'delete\' in options');
+    it('calls delete with method=\'delete\' in options', () => {
+      const myClient = new Client({ url: 'http://something.com' });
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.delete('test').then(() => {
+        expect(myClient.fetch.args[0][1].method).to.equal('delete');
+        expect(myClient.fetch.args[0][0]).to.equal('test');
+      });
+    });
+
     it('calls patch with headers, method, body');
     it('calls put with headers, method, body');
     it('calls upload with headers, method, body');
