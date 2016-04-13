@@ -311,12 +311,19 @@ describe('client', () => {
     });
 
     const middlewares = ['onError', 'onFail'];
+
+    const responses = [
+      Promise.resolve('test'),
+      Promise.resolve(new Response(null, { status: 400 })),
+    ];
+
     let i;
     for (i = 0; i < middlewares.length; i += 1) {
       const method = middlewares[i];
+      const response = responses[i];
       describe(`${method} functionality`, () => {
         it(`calls ${method} when a request fails`, () => {
-          GLOBAL.fetch = sinon.spy(() => Promise.reject('test'));
+          GLOBAL.fetch = sinon.spy(() => response);
           const myClient = new Client();
           const myMiddleware = {};
           myMiddleware[method] = sinon.spy();
@@ -328,7 +335,7 @@ describe('client', () => {
         });
 
         it(`passes request and error to ${middlewares[i]}`, () => {
-          GLOBAL.fetch = sinon.spy(() => Promise.reject('test'));
+          GLOBAL.fetch = sinon.spy(() => response);
           const myClient = new Client();
           const myMiddleware = {};
           myMiddleware[method] = sinon.spy();
