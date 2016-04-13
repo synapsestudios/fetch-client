@@ -311,18 +311,19 @@ describe('client', () => {
     });
 
     const middlewares = ['onError', 'onFail'];
-    let i = 0;
-    for (i; i < middlewares.length; i++) {
-      describe(`${middlewares[i]} functionality`, () => {
-        it(`calls ${middlewares[i]} when a request fails`, () => {
+    let i;
+    for (i = 0; i < middlewares.length; i += 1) {
+      const method = middlewares[i];
+      describe(`${method} functionality`, () => {
+        it(`calls ${method} when a request fails`, () => {
           GLOBAL.fetch = sinon.spy(() => Promise.reject('test'));
           const myClient = new Client();
           const myMiddleware = {};
-          myMiddleware[middlewares[i]] = sinon.spy;
+          myMiddleware[method] = sinon.spy();
           myClient.addMiddleware(myMiddleware);
 
           return myClient.fetch().catch(() => {
-            expect(myMiddleware[middlewares[i]]).to.have.been.calledOnce;
+            expect(myMiddleware[method]).to.have.been.calledOnce;
           });
         });
 
@@ -330,12 +331,12 @@ describe('client', () => {
           GLOBAL.fetch = sinon.spy(() => Promise.reject('test'));
           const myClient = new Client();
           const myMiddleware = {};
-          myMiddleware[middlewares[i]] = sinon.spy;
+          myMiddleware[method] = sinon.spy();
           myClient.addMiddleware(myMiddleware);
 
           return myClient.fetch().catch(() => {
-            expect(myMiddleware[middlewares[i]].args[0][0]).to.be.instanceof(Request);
-            expect(myMiddleware[middlewares[i]].args[0][1]).to.equal('test');
+            expect(myMiddleware[method].args[0][0]).to.be.instanceof(Request);
+            expect(myMiddleware[method].args[0][1]).to.equal('test');
           });
         });
 
@@ -343,11 +344,11 @@ describe('client', () => {
           GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
           const myClient = new Client();
           const myMiddleware = { onSuccess: sinon.spy() };
-          myMiddleware[middlewares[i]] = sinon.spy;
+          myMiddleware[method] = sinon.spy();
           myClient.addMiddleware(myMiddleware);
 
           return myClient.fetch().then(() => {
-            expect(myMiddleware[middlewares[i]]).to.have.callCount(0);
+            expect(myMiddleware[method]).to.have.callCount(0);
           });
         });
       });
