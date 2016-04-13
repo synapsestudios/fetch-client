@@ -1,4 +1,4 @@
-/* eslint no-unused-vars:0, no-unused-expressions:0 */
+/* eslint no-unused-vars:0, no-unused-expressions:0 no-loop-func:0 */
 import chai, { expect } from 'chai';
 import sinon from 'sinon';
 
@@ -310,40 +310,47 @@ describe('client', () => {
       });
     });
 
-    describe('onError functionality', () => {
-      it('calls onError when a request fails', () => {
-        GLOBAL.fetch = sinon.spy(() => Promise.reject('test'));
-        const myClient = new Client();
-        const myMiddleware = { onError: sinon.spy() };
-        myClient.addMiddleware(myMiddleware);
+    const middlewares = ['onError', 'onFail'];
+    let i = 0;
+    for (i; i < middlewares.length; i++) {
+      describe(`${middlewares[i]} functionality`, () => {
+        it(`calls ${middlewares[i]} when a request fails`, () => {
+          GLOBAL.fetch = sinon.spy(() => Promise.reject('test'));
+          const myClient = new Client();
+          const myMiddleware = {};
+          myMiddleware[middlewares[i]] = sinon.spy;
+          myClient.addMiddleware(myMiddleware);
 
-        return myClient.fetch().catch(() => {
-          expect(myMiddleware.onError).to.have.been.calledOnce;
+          return myClient.fetch().catch(() => {
+            expect(myMiddleware[middlewares[i]]).to.have.been.calledOnce;
+          });
+        });
+
+        it(`passes request and error to ${middlewares[i]}`, () => {
+          GLOBAL.fetch = sinon.spy(() => Promise.reject('test'));
+          const myClient = new Client();
+          const myMiddleware = {};
+          myMiddleware[middlewares[i]] = sinon.spy;
+          myClient.addMiddleware(myMiddleware);
+
+          return myClient.fetch().catch(() => {
+            expect(myMiddleware[middlewares[i]].args[0][0]).to.be.instanceof(Request);
+            expect(myMiddleware[middlewares[i]].args[0][1]).to.equal('test');
+          });
+        });
+
+        it(`does not call ${middlewares[i]} when a request succeeds`, () => {
+          GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+          const myClient = new Client();
+          const myMiddleware = { onSuccess: sinon.spy() };
+          myMiddleware[middlewares[i]] = sinon.spy;
+          myClient.addMiddleware(myMiddleware);
+
+          return myClient.fetch().then(() => {
+            expect(myMiddleware[middlewares[i]]).to.have.callCount(0);
+          });
         });
       });
-
-      it('passes request and error to onError', () => {
-        GLOBAL.fetch = sinon.spy(() => Promise.reject('test'));
-        const myClient = new Client();
-        const myMiddleware = { onError: sinon.spy() };
-        myClient.addMiddleware(myMiddleware);
-
-        return myClient.fetch().catch(() => {
-          expect(myMiddleware.onError.args[0][0]).to.be.instanceof(Request);
-          expect(myMiddleware.onError.args[0][1]).to.equal('test');
-        });
-      });
-
-      it('does not call onError when a request succeeds', () => {
-        GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
-        const myClient = new Client();
-        const myMiddleware = { onSuccess: sinon.spy(), onError: sinon.spy() };
-        myClient.addMiddleware(myMiddleware);
-
-        return myClient.fetch().then(() => {
-          expect(myMiddleware.onError).to.have.callCount(0);
-        });
-      });
-    });
+    }
   });
 });
