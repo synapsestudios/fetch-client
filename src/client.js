@@ -92,6 +92,7 @@ export default class Client {
 
     let fetchPromise;
     if (request && !onStartError) {
+      console.log(request);
       fetchPromise = fetch(request)
         .then(response => {
           const mutatedResponse = this._callOnSuccesses(request, response);
@@ -168,7 +169,17 @@ export default class Client {
     return this.fetch(path, _options);
   }
 
-  upload(path, file, options) {
-    return this.fetch(path, options);
+  upload(path, input, options) {
+    const _options = options || {};
+    _options.method = 'post';
+
+    const data = new FormData();
+    let i;
+    for (i = 0; i < input.files.length; i++) {
+      data.append('files[]', input.files[i]);
+    }
+
+    _options.body = data;
+    return this.fetch(path, _options);
   }
 }
