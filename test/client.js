@@ -426,8 +426,44 @@ describe('client', () => {
       });
     });
 
-    it('calls patch with headers, method, body');
-    it('calls put with headers, method, body');
+    it('calls patch with headers, method, body', () => {
+      const myClient = new Client({
+        url: 'http://something.com',
+        put: { method: 'notallowed', headers: { Accept: 'test' }, anotherThing: 'cool' },
+      });
+
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.put('test', { something: 'test' })
+        .then(() => {
+          expect(myClient.fetch.args[0][1].method).to.equal('put');
+          expect(myClient.fetch.args[0][1].headers).to.deep.equal({
+            Accept: 'test',
+            'Content-Type': 'application/json',
+          });
+          expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
+        });
+    });
+
+    it('calls put with headers, method, body', () => {
+      const myClient = new Client({
+        url: 'http://something.com',
+        patch: { method: 'notallowed', headers: { Accept: 'test' }, anotherThing: 'cool' },
+      });
+
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.patch('test', { something: 'test' })
+        .then(() => {
+          expect(myClient.fetch.args[0][1].method).to.equal('patch');
+          expect(myClient.fetch.args[0][1].headers).to.deep.equal({
+            Accept: 'test',
+            'Content-Type': 'application/json',
+          });
+          expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
+        });
+    });
+
     it('calls upload with headers, method, body');
   });
 });
