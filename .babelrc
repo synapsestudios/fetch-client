@@ -1,6 +1,6 @@
 {
   "env": {"browser" : true},
-  "plugins": ["transform-object-rest-spread"],
+  "plugins": ["rewire", "transform-object-rest-spread"],
   "presets": [
     "es2015"
   ]
