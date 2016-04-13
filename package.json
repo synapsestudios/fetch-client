@@ -41,6 +41,7 @@
     "whatwg-fetch": "^0.11.0"
   },
   "dependencies": {
-    "eventemitter2": "^1.0.0"
+    "eventemitter2": "^1.0.0",
+    "resumablejs": "^1.0.2"
   }
 }
