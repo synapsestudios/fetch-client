@@ -15,7 +15,7 @@ import EventEmitter2 from 'eventemitter2';
 import * as events from '../lib/events';
 
 // polyfills
-import { Request } from 'whatwg-fetch';
+import { Request, Response } from 'whatwg-fetch';
 import FormData from 'form-data';
 GLOBAL.Request = Request;
 GLOBAL.FormData = FormData;
@@ -60,11 +60,30 @@ describe('client', () => {
     });
 
     it('should emit fail event', () => {
-      GLOBAL.fetch = sinon.spy(() => Promise.reject('test'));
+      const response = new Response(null, { status: 400, statusText: 'whatever 400' });
+      GLOBAL.fetch = sinon.spy(() => Promise.resolve(response));
 
       const myClient = new Client();
       const cb = sinon.spy();
       myClient.on(events.REQUEST_FAIL, cb);
+
+      const promise = myClient.fetch('http://google.com/', { method: 'get' });
+
+      return expect(promise).to.be.fulfilled.then(x => {
+        expect(cb).to.have.been.calledOnce;
+        expect(cb.args[0][0]).to.be.instanceof(Request);
+        expect(cb.args[0][0]).to.have.property('url', 'http://google.com/');
+        expect(cb.args[0][0]).to.have.property('method', 'GET');
+        expect(cb.args[0][1]).to.equal(response);
+      });
+    });
+
+    it('should emit error event', () => {
+      GLOBAL.fetch = sinon.spy(() => Promise.reject('test'));
+
+      const myClient = new Client();
+      const cb = sinon.spy();
+      myClient.on(events.REQUEST_ERROR, cb);
 
       const promise = myClient.fetch('http://google.com/', { method: 'get' });
 
