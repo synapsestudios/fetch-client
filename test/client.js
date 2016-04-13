@@ -60,7 +60,7 @@ describe('client', () => {
 
       const myClient = new Client();
       const cb = sinon.spy();
-      myClient.on(events.REQUEST_FAIL, cb);
+      myClient.on(events.REQUEST_FAILURE, cb);
 
       const promise = myClient.fetch('http://google.com/', { method: 'get' });
 

@@ -65,7 +65,7 @@ export default class Client {
         })
         .catch(err => {
           const mutatedError = this._callOnFails(request, err);
-          this.eventEmitter.emit(events.REQUEST_FAIL, request, mutatedError);
+          this.eventEmitter.emit(events.REQUEST_FAILURE, request, mutatedError);
           throw mutatedError;
         });
     } else {
