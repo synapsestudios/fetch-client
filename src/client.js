@@ -36,6 +36,9 @@ export default class Client {
     return this._callMiddlewareMethod('onFail', 1, false, request, response);
   }
 
+  _callOnErrors(request, response) {
+    return this._callMiddlewareMethod('onError', 1, false, request, response);
+  }
   _addHelpers(helpers) {
     if (helpers) {
       Object.keys(helpers).forEach((key) => {
@@ -59,13 +62,20 @@ export default class Client {
     if (request && !onStartError) {
       fetchPromise = fetch(request)
         .then(response => {
-          const mutatedResponse = this._callOnSuccesses(request, response);
-          this.eventEmitter.emit(events.REQUEST_SUCCESS, request, mutatedResponse);
+          let mutatedResponse;
+          if (response.status >= 400) {
+            mutatedResponse = this._callOnFails(request, response);
+            this.eventEmitter.emit(events.REQUEST_FAIL, request, mutatedResponse);
+          } else {
+            mutatedResponse = this._callOnSuccesses(request, response);
+            this.eventEmitter.emit(events.REQUEST_SUCCESS, request, mutatedResponse);
+          }
+
           return mutatedResponse;
         })
         .catch(err => {
-          const mutatedError = this._callOnFails(request, err);
-          this.eventEmitter.emit(events.REQUEST_FAIL, request, mutatedError);
+          const mutatedError = this._callOnErrors(request, err);
+          this.eventEmitter.emit(events.REQUEST_ERROR, request, mutatedError);
           throw mutatedError;
         });
     } else {
