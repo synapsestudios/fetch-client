@@ -19,23 +19,25 @@ import { Request, Response } from 'whatwg-fetch';
 GLOBAL.Request = Request;
 
 describe('helpers & defaults', () => {
-  it('prepends default url to fetch path', () => {
-    GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
-    const myClient = new Client({ url: 'http://something.com/' });
+  describe('defaults', () => {
+    it('prepends default url to fetch path', () => {
+      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      const myClient = new Client({ url: 'http://something.com/' });
 
-    return myClient.fetch('test').then(() => {
-      expect(GLOBAL.fetch.args[0][0]).to.be.instanceof(Request);
-      expect(GLOBAL.fetch.args[0][0].url).to.equal('http://something.com/test');
+      return myClient.fetch('test').then(() => {
+        expect(GLOBAL.fetch.args[0][0]).to.be.instanceof(Request);
+        expect(GLOBAL.fetch.args[0][0].url).to.equal('http://something.com/test');
+      });
     });
-  });
 
-  it('includes slash in url if omitted', () => {
-    GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
-    const myClient = new Client({ url: 'http://something.com' });
+    it('includes slash in url if omitted', () => {
+      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      const myClient = new Client({ url: 'http://something.com' });
 
-    return myClient.fetch('test').then(() => {
-      expect(GLOBAL.fetch.args[0][0]).to.be.instanceof(Request);
-      expect(GLOBAL.fetch.args[0][0].url).to.equal('http://something.com/test');
+      return myClient.fetch('test').then(() => {
+        expect(GLOBAL.fetch.args[0][0]).to.be.instanceof(Request);
+        expect(GLOBAL.fetch.args[0][0].url).to.equal('http://something.com/test');
+      });
     });
   });
 
