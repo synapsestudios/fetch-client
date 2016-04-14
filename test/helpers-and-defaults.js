@@ -282,7 +282,22 @@ describe('helpers & defaults', () => {
           });
         });
 
-        it('does nothing to body and uses default headers when encoding is set to false');
+        it('does nothing to body and uses default Content-Type when encoding is false', () => {
+          const myClient = new Client({
+            encoding: false,
+            post: {
+              headers: {
+                'Content-Type': 'something/weird',
+              },
+            },
+          });
+
+          myClient.fetch = sinon.spy(() => Promise.resolve(true));
+          expect(myClient.post('something', 'test')).to.be.fulfilled.then(() => {
+            expect(myClient.fetch.args[0][1].headers['Content-Type']).to.equal('something/weird');
+            expect(myClient.fetch.args[0][1].body).to.equal('test');
+          });
+        });
       });
 
       describe('encode based on Content-Type', () => {
