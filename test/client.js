@@ -1,4 +1,4 @@
-/* eslint no-unused-vars:0, no-unused-expressions:0 */
+/* eslint no-unused-vars:0, no-unused-expressions:0 no-loop-func:0 */
 import chai, { expect } from 'chai';
 import sinon from 'sinon';
 
@@ -8,12 +8,14 @@ import sinonChai from 'sinon-chai';
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
 
-import Client from '../lib/client';
-import MiddlewareError from '../lib/middleware-error';
+import Client from '../src/client';
+import MiddlewareError from '../src/middleware-error';
 
 import EventEmitter2 from 'eventemitter2';
-import * as events from '../lib/events';
-import { Request, fetch } from 'whatwg-fetch';
+import * as events from '../src/events';
+
+// polyfills
+import { Request, Response } from 'whatwg-fetch';
 GLOBAL.Request = Request;
 
 describe('client', () => {
@@ -56,11 +58,30 @@ describe('client', () => {
     });
 
     it('should emit fail event', () => {
-      GLOBAL.fetch = sinon.spy(() => Promise.reject('test'));
+      const response = new Response(null, { status: 400, statusText: 'whatever 400' });
+      GLOBAL.fetch = sinon.spy(() => Promise.resolve(response));
 
       const myClient = new Client();
       const cb = sinon.spy();
       myClient.on(events.REQUEST_FAILURE, cb);
+
+      const promise = myClient.fetch('http://google.com/', { method: 'get' });
+
+      return expect(promise).to.be.fulfilled.then(x => {
+        expect(cb).to.have.been.calledOnce;
+        expect(cb.args[0][0]).to.be.instanceof(Request);
+        expect(cb.args[0][0]).to.have.property('url', 'http://google.com/');
+        expect(cb.args[0][0]).to.have.property('method', 'GET');
+        expect(cb.args[0][1]).to.equal(response);
+      });
+    });
+
+    it('should emit error event', () => {
+      GLOBAL.fetch = sinon.spy(() => Promise.reject('test'));
+
+      const myClient = new Client();
+      const cb = sinon.spy();
+      myClient.on(events.REQUEST_ERROR, cb);
 
       const promise = myClient.fetch('http://google.com/', { method: 'get' });
 
@@ -288,40 +309,195 @@ describe('client', () => {
       });
     });
 
-    describe('onFail functionality', () => {
-      it('calls onFail when a request fails', () => {
-        GLOBAL.fetch = sinon.spy(() => Promise.reject('test'));
-        const myClient = new Client();
-        const myMiddleware = { onFail: sinon.spy() };
-        myClient.addMiddleware(myMiddleware);
+    const middlewares = ['onError', 'onFail'];
 
-        return myClient.fetch().catch(() => {
-          expect(myMiddleware.onFail).to.have.been.calledOnce;
+    const responses = [
+      Promise.resolve('test'),
+      Promise.resolve(new Response(null, { status: 400 })),
+    ];
+
+    let i;
+    for (i = 0; i < middlewares.length; i += 1) {
+      const method = middlewares[i];
+      const response = responses[i];
+      describe(`${method} functionality`, () => {
+        it(`calls ${method} when a request fails`, () => {
+          GLOBAL.fetch = sinon.spy(() => response);
+          const myClient = new Client();
+          const myMiddleware = {};
+          myMiddleware[method] = sinon.spy();
+          myClient.addMiddleware(myMiddleware);
+
+          return myClient.fetch().catch(() => {
+            expect(myMiddleware[method]).to.have.been.calledOnce;
+          });
+        });
+
+        it(`passes request and error to ${middlewares[i]}`, () => {
+          GLOBAL.fetch = sinon.spy(() => response);
+          const myClient = new Client();
+          const myMiddleware = {};
+          myMiddleware[method] = sinon.spy();
+          myClient.addMiddleware(myMiddleware);
+
+          return myClient.fetch().catch(() => {
+            expect(myMiddleware[method].args[0][0]).to.be.instanceof(Request);
+            expect(myMiddleware[method].args[0][1]).to.equal('test');
+          });
+        });
+
+        it(`does not call ${middlewares[i]} when a request succeeds`, () => {
+          GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+          const myClient = new Client();
+          const myMiddleware = { onSuccess: sinon.spy() };
+          myMiddleware[method] = sinon.spy();
+          myClient.addMiddleware(myMiddleware);
+
+          return myClient.fetch().then(() => {
+            expect(myMiddleware[method]).to.have.callCount(0);
+          });
         });
       });
+    }
+  });
 
-      it('passes request and error to onFail', () => {
-        GLOBAL.fetch = sinon.spy(() => Promise.reject('test'));
-        const myClient = new Client();
-        const myMiddleware = { onFail: sinon.spy() };
-        myClient.addMiddleware(myMiddleware);
+  describe('helpers & defaults', () => {
+    it('prepends default url to fetch path', () => {
+      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      const myClient = new Client({ url: 'http://something.com/' });
 
-        return myClient.fetch().catch(() => {
-          expect(myMiddleware.onFail.args[0][0]).to.be.instanceof(Request);
-          expect(myMiddleware.onFail.args[0][1]).to.equal('test');
+      return myClient.fetch('test').then(() => {
+        expect(GLOBAL.fetch.args[0][0]).to.be.instanceof(Request);
+        expect(GLOBAL.fetch.args[0][0].url).to.equal('http://something.com/test');
+      });
+    });
+
+    it('includes slash in url if omitted', () => {
+      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      const myClient = new Client({ url: 'http://something.com' });
+
+      return myClient.fetch('test').then(() => {
+        expect(GLOBAL.fetch.args[0][0]).to.be.instanceof(Request);
+        expect(GLOBAL.fetch.args[0][0].url).to.equal('http://something.com/test');
+      });
+    });
+
+    it('calls fetch() with method=\'get\' in options when calling get()', () => {
+      const myClient = new Client({ url: 'http://something.com' });
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.get('test').then(() => {
+        expect(myClient.fetch.args[0][1].method).to.equal('get');
+      });
+    });
+
+    it('calls fetch() with passed options when calling get()', () => {
+      const myClient = new Client({ url: 'http://something.com' });
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.get('test', { something: 'test' }).then(() => {
+        expect(myClient.fetch.args[0][1].something).to.equal('test');
+      });
+    });
+
+    it('calls fetch setting headers, method, body when calling post', () => {
+      const myClient = new Client({ url: 'http://something.com' });
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.post('test', { something: 'test' }).then(() => {
+        expect(myClient.fetch.args[0][1].method).to.equal('post');
+        expect(myClient.fetch.args[0][1].headers).to.deep.equal({
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
         });
+        expect(myClient.fetch.args[0][1].body).to.equal(JSON.stringify({ something: 'test' }));
+      });
+    });
+
+    it('overrides defaults when calling post with options', () => {
+      const myClient = new Client({ url: 'http://something.com' });
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.post(
+        'test',
+        { something: 'test' },
+        { method: 'notallowed', headers: { Accept: 'test' }, anotherThing: 'cool' }
+      )
+        .then(() => {
+          expect(myClient.fetch.args[0][1].method).to.equal('post');
+          expect(myClient.fetch.args[0][1].headers).to.deep.equal({
+            Accept: 'test',
+            'Content-Type': 'application/json',
+          });
+          expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
+        });
+    });
+
+    it('uses post defaults from main defaults object', () => {
+      const myClient = new Client({
+        url: 'http://something.com',
+        post: { method: 'notallowed', headers: { Accept: 'test' }, anotherThing: 'cool' },
       });
 
-      it('does not call onFail when a request succeeds', () => {
-        GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
-        const myClient = new Client();
-        const myMiddleware = { onSuccess: sinon.spy(), onFail: sinon.spy() };
-        myClient.addMiddleware(myMiddleware);
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
-        return myClient.fetch().then(() => {
-          expect(myMiddleware.onFail).to.have.callCount(0);
+      return myClient.post('test', { something: 'test' })
+        .then(() => {
+          expect(myClient.fetch.args[0][1].method).to.equal('post');
+          expect(myClient.fetch.args[0][1].headers).to.deep.equal({
+            Accept: 'test',
+            'Content-Type': 'application/json',
+          });
+          expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
         });
+    });
+
+    it('calls delete with method=\'delete\' in options', () => {
+      const myClient = new Client({ url: 'http://something.com' });
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.delete('test').then(() => {
+        expect(myClient.fetch.args[0][1].method).to.equal('delete');
+        expect(myClient.fetch.args[0][0]).to.equal('test');
       });
+    });
+
+    it('calls patch with headers, method, body', () => {
+      const myClient = new Client({
+        url: 'http://something.com',
+        put: { method: 'notallowed', headers: { Accept: 'test' }, anotherThing: 'cool' },
+      });
+
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.put('test', { something: 'test' })
+        .then(() => {
+          expect(myClient.fetch.args[0][1].method).to.equal('put');
+          expect(myClient.fetch.args[0][1].headers).to.deep.equal({
+            Accept: 'test',
+            'Content-Type': 'application/json',
+          });
+          expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
+        });
+    });
+
+    it('calls put with headers, method, body', () => {
+      const myClient = new Client({
+        url: 'http://something.com',
+        patch: { method: 'notallowed', headers: { Accept: 'test' }, anotherThing: 'cool' },
+      });
+
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.patch('test', { something: 'test' })
+        .then(() => {
+          expect(myClient.fetch.args[0][1].method).to.equal('patch');
+          expect(myClient.fetch.args[0][1].headers).to.deep.equal({
+            Accept: 'test',
+            'Content-Type': 'application/json',
+          });
+          expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
+        });
     });
   });
 });
