@@ -135,9 +135,15 @@ export default class Client {
       return { body: _body, contentType: false };
     }
 
-    if (this.defaults.encoding === 'json') {
-      _body = JSON.stringify(_body);
-      _contentType = 'application/json';
+    switch (this.defaults.encoding) {
+      case 'json':
+        _body = JSON.stringify(_body);
+        _contentType = 'application/json';
+        break;
+      case 'text':
+        _contentType = 'text/plain';
+        break;
+      default:
     }
 
     return { body: _body, contentType: _contentType };
