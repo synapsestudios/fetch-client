@@ -239,7 +239,6 @@ describe('helpers & defaults', () => {
             someRecursive: { foo: ['array'], bar: 'string', baz: { val: 'object' } },
           });
 
-
           return expect(promise).to.be.fulfilled.then(() => {
             // when using FormData fetch sets content type correctly on its own
             expect(myClient.fetch.args[0][1].headers['Content-Type']).to.be.undefined;
@@ -256,7 +255,33 @@ describe('helpers & defaults', () => {
           });
         });
 
-        it('encodes body as URLSearchParams when encoding is x-www-form-urlencoded');
+        it('encodes body as URLSearchParams when encoding is x-www-form-urlencoded', () => {
+          const myClient = new Client({ encoding: 'x-www-form-urlencoded' });
+          myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+          const promise = myClient.post('something', {
+            something: 'hi',
+            someArray: ['hey', 'ho'],
+            someObject: { foo: 'bar' },
+            someRecursive: { foo: ['array'], bar: 'string', baz: { val: 'object' } },
+          });
+
+          return expect(promise).to.be.fulfilled.then(() => {
+            // when using FormData fetch sets content type correctly on its own
+            expect(myClient.fetch.args[0][1].headers['Content-Type']).to.be.undefined;
+
+            const formData = new URLSearchParams();
+            formData.append('something', 'hi');
+            formData.append('somethingArray[]', 'hey');
+            formData.append('somethingArray[]', 'ho');
+            formData.append('someObject[foo]', 'bar');
+            formData.append('someRecursive[foo][]', 'array');
+            formData.append('someRecursive[bar]', 'string');
+            formData.append('someRecursive[baz][val]', 'object');
+            expect(myClient.fetch.args[0][1].body).to.equal(formData);
+          });
+        });
+
         it('does nothing to body and uses default headers when encoding is set to false');
       });
 
