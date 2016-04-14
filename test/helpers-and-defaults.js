@@ -136,14 +136,14 @@ describe('helpers & defaults', () => {
     it('calls patch with headers, method, body', () => {
       const myClient = new Client({
         url: 'http://something.com',
-        put: { method: 'notallowed', headers: { Accept: 'test' }, anotherThing: 'cool' },
+        patch: { method: 'notallowed', headers: { Accept: 'test' }, anotherThing: 'cool' },
       });
 
       myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
-      return myClient.put('test', { something: 'test' })
+      return myClient.patch('test', { something: 'test' })
         .then(() => {
-          expect(myClient.fetch.args[0][1].method).to.equal('put');
+          expect(myClient.fetch.args[0][1].method).to.equal('patch');
           expect(myClient.fetch.args[0][1].headers).to.deep.equal({
             Accept: 'test',
             'Content-Type': 'application/json',
