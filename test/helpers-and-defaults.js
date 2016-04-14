@@ -208,8 +208,10 @@ describe('helpers & defaults', () => {
       describe('encode based on default encoding', () => {
         it('sets content type to application/json and json encodes when encoding is json', () => {
           const defaults = { encoding: 'json' };
-          defaults[method].headers = {
-            'Content-Type': 'something/weird',
+          defaults[method] = {
+            headers: {
+              'Content-Type': 'something/weird',
+            },
           };
 
           const myClient = new Client(defaults);
