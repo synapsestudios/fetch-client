@@ -13,7 +13,7 @@ import Client from '../lib/client';
 // polyfills
 import { Request, Response } from 'whatwg-fetch';
 import FormData from 'form-data';
-import URLSearchParams from 'urlsearchparams';
+import { URLSearchParams } from 'urlsearchparams';
 
 GLOBAL.Request = Request;
 GLOBAL.FormData = FormData;
@@ -172,8 +172,7 @@ describe('helpers & defaults', () => {
     });
   });
 
-  // const methods = ['put', 'post', 'patch'];
-  const methods = ['post'];
+  const methods = ['put', 'post', 'patch'];
   let i = 0;
 
   for (i; i < methods.length; i++) {
