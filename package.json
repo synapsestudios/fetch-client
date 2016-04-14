@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "BABEL_ENV=testing mocha --compilers js:babel-register",
+    "test": "npm run clean && BABEL_ENV=testing mocha --compilers js:babel-register",
     "clean": "rm -rf dist",
     "build": "npm run clean && babel src --out-dir lib",
     "lint": "eslint src",
