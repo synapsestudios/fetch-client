@@ -230,6 +230,7 @@ describe('helpers & defaults', () => {
 
         it('encodes body as FormData when encoding is form-data');
         it('encodes body as URLSearchParams when encoding is x-www-form-urlencoded');
+        it('does nothing to body and uses default headers when encoding is set to false');
       });
 
       describe('encode based on Content-Type', () => {
