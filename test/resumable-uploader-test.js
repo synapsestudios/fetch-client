@@ -16,73 +16,109 @@ GLOBAL.Request = Request;
 GLOBAL.File = require('file-api').File;
 
 describe('uploader', () => {
-  let uploader;
   let mockResumableEventEmitter;
-  let uploadedFile;
-  describe('events', () => {
-    beforeEach(() => {
+  let fileToUpload;
+
+  describe('upload', () => {
+    const getUploader = (resumablePrototypeAttribs) => {
       mockResumableEventEmitter = new EventEmitter2();
-      const MockResumable = function mockRes() {
-        this.support = true;
-        this.addFile = () => {};
-        this.on = mockResumableEventEmitter.on.bind(mockResumableEventEmitter);
-        this.emit = mockResumableEventEmitter.emit.bind(mockResumableEventEmitter);
-      };
-      uploadedFile = new GLOBAL.File('./uploader-test.js');
+      const resumablePrototype = Object.assign(
+        {},
+        {
+          support: true,
+          addFile: () => {},
+          upload: () => {},
+          on: mockResumableEventEmitter.on.bind(mockResumableEventEmitter),
+          emit: mockResumableEventEmitter.emit.bind(mockResumableEventEmitter),
+        },
+        resumablePrototypeAttribs
+      );
+      const MockResumable = function MockResConstructor() {};
+      MockResumable.prototype = resumablePrototype;
       Uploader.__Rewire__('Resumable', MockResumable);
-      uploader = new Uploader('/api-path', uploadedFile);
-    });
+      fileToUpload = new GLOBAL.File('./uploader-test.js');
+      return new Uploader();
+    };
 
     afterEach(() => {
       Uploader.__ResetDependency__('Resumable');
     });
 
     it('should emit starting event', () => {
-      const cb = sinon.spy();
-      uploader.on(events.REQUEST_START, cb);
+      const spy = sinon.spy();
+      const uploader = getUploader();
 
-      uploader.upload().then(() => {
-        expect(cb).to.have.been.calledOnce;
-      });
+      uploader.on(events.REQUEST_START, spy);
+
+      uploader.upload('/api-path', fileToUpload);
     });
 
     it('should emit success event on fileSuccess event', () => {
-      const cb = sinon.spy();
+      const spy = sinon.spy();
+      const uploader = getUploader();
 
-      uploader.on(events.REQUEST_SUCCESS, cb);
+      uploader.on(events.REQUEST_SUCCESS, spy);
 
-      const promise = uploader.upload();
+      const promise = uploader.upload('/api-path', fileToUpload);
       mockResumableEventEmitter.emit('fileSuccess', 'file', '"message"');
 
       return expect(promise).to.be.fulfilled.then(() => {
-        expect(cb).to.have.been.calledOnce;
+        expect(spy).to.have.been.calledOnce;
       });
     });
 
     it('should emit failure event', () => {
-      const cb = sinon.spy();
+      const spy = sinon.spy();
+      const uploader = getUploader();
 
-      uploader.on(events.REQUEST_FAILURE, cb);
+      uploader.on(events.REQUEST_FAILURE, spy);
 
-      const promise = uploader.upload();
+      const promise = uploader.upload('/api-path', fileToUpload);
       mockResumableEventEmitter.emit('fileError', 'file', '"message"');
 
       return expect(promise).to.be.rejected.then(() => {
-        expect(cb).to.have.been.calledOnce;
+        expect(spy).to.have.been.calledOnce;
       });
     });
 
     it('should emit upload progress events', () => {
-      const cb = sinon.spy();
+      const spy = sinon.spy();
+      const uploader = getUploader();
 
-      uploader.on(events.UPLOAD_PROGRESS, cb);
+      uploader.on(events.UPLOAD_PROGRESS, spy);
 
-      const promise = uploader.upload();
-      uploadedFile.progress = () => 0.50;
-      mockResumableEventEmitter.emit('fileProgress', uploadedFile);
+      uploader.upload('/api-path', fileToUpload);
+      fileToUpload.progress = () => 0.50;
+      mockResumableEventEmitter.emit('fileProgress', fileToUpload);
 
-      expect(cb).to.have.been.calledOnce;
-      expect(cb).to.have.been.calledWith(50);
+      expect(spy).to.have.been.calledOnce;
+      expect(spy).to.have.been.calledWith(50);
+    });
+
+    it('throws Error if resumable not supported', () => {
+      const uploader = getUploader({ support: false });
+
+      expect(uploader.upload).to.throw(Error, 'not supported');
+    });
+
+    it('adds file to resumable', () => {
+      const spy = sinon.spy();
+      const uploader = getUploader({ addFile: spy });
+
+      uploader.upload('/api-path', fileToUpload);
+
+      expect(spy).to.have.been.calledOnce;
+      expect(spy).to.have.been.calledWith(fileToUpload);
+    });
+
+    it('starts upload when file added', () => {
+      const spy = sinon.spy();
+      const uploader = getUploader({ upload: spy });
+
+      uploader.upload('/api-path', fileToUpload);
+      mockResumableEventEmitter.emit('fileAdded', fileToUpload);
+
+      expect(spy).to.have.been.calledOnce;
     });
   });
 });
