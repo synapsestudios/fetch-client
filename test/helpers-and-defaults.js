@@ -234,8 +234,11 @@ describe('helpers & defaults', () => {
 
           const promise = myClient.post('something', {
             something: 'hi',
-            somethingElse: ['hey', 'ho'],
+            someArray: ['hey', 'ho'],
+            someObject: { foo: 'bar' },
+            someRecursive: { foo: ['array'], bar: 'string', baz: { val: 'object' } },
           });
+
 
           return expect(promise).to.be.fulfilled.then(() => {
             // when using FormData fetch sets content type correctly on its own
@@ -243,8 +246,12 @@ describe('helpers & defaults', () => {
 
             const formData = new FormData();
             formData.append('something', 'hi');
-            formData.append('somethingElse[]', 'hey');
-            formData.append('somethingElse[]', 'ho');
+            formData.append('somethingArray[]', 'hey');
+            formData.append('somethingArray[]', 'ho');
+            formData.append('someObject[foo]', 'bar');
+            formData.append('someRecursive[foo][]', 'array');
+            formData.append('someRecursive[bar]', 'string');
+            formData.append('someRecursive[baz][val]', 'object');
             expect(myClient.fetch.args[0][1].body).to.equal(formData);
           });
         });
