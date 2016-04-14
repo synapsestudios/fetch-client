@@ -18,6 +18,8 @@ GLOBAL.File = require('file-api').File;
 describe('uploader', () => {
   let mockResumableEventEmitter;
   let fileToUpload;
+  let resumableOptions;
+  const uploaderDefaults = { url: 'https://some.api' };
 
   describe('upload', () => {
     const getUploader = (resumablePrototypeAttribs) => {
@@ -25,6 +27,9 @@ describe('uploader', () => {
       const resumablePrototype = Object.assign(
         {},
         {
+          setOptions: (options) => {
+            resumableOptions = options;
+          },
           support: true,
           addFile: () => {},
           upload: () => {},
@@ -33,11 +38,13 @@ describe('uploader', () => {
         },
         resumablePrototypeAttribs
       );
-      const MockResumable = function MockResConstructor() {};
+      const MockResumable = function MockResConstructor(options) {
+        this.setOptions(options);
+      };
       MockResumable.prototype = resumablePrototype;
       Uploader.__Rewire__('Resumable', MockResumable);
       fileToUpload = new GLOBAL.File('./uploader-test.js');
-      return new Uploader();
+      return new Uploader(uploaderDefaults);
     };
 
     afterEach(() => {
@@ -98,7 +105,7 @@ describe('uploader', () => {
     it('throws Error if resumable not supported', () => {
       const uploader = getUploader({ support: false });
 
-      expect(uploader.upload).to.throw(Error, 'not supported');
+      expect(uploader.upload.bind(uploader)).to.throw(Error, 'not supported');
     });
 
     it('adds file to resumable', () => {
@@ -119,6 +126,15 @@ describe('uploader', () => {
       mockResumableEventEmitter.emit('fileAdded', fileToUpload);
 
       expect(spy).to.have.been.calledOnce;
+    });
+
+    it('sets resumable target to URL plus path', () => {
+      const uploader = getUploader();
+
+      const path = '/api-path';
+      uploader.upload(path, fileToUpload);
+
+      expect(resumableOptions.target).to.equal(`${uploaderDefaults.url}${path}`);
     });
   });
 });

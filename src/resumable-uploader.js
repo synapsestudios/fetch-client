@@ -6,7 +6,7 @@ export default class ResumableUploader extends Client {
   upload(path, fileToUpload, options = {}) {
     const resumable = new Resumable({
       headers: options.headers,
-      target: path,
+      target: `${this.defaults.url}${path}`,
       method: 'octet',
       query: options.query || {},
     });
