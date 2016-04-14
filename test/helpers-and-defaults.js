@@ -228,7 +228,27 @@ describe('helpers & defaults', () => {
           });
         });
 
-        it('encodes body as FormData when encoding is form-data');
+        it('encodes body as FormData when encoding is form-data', () => {
+          const myClient = new Client({ encoding: 'form-data' });
+          myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+          const promise = myClient.post('something', {
+            something: 'hi',
+            somethingElse: ['hey', 'ho'],
+          });
+
+          return expect(promise).to.be.fulfilled.then(() => {
+            // when using FormData fetch sets content type correctly on its own
+            expect(myClient.fetch.args[0][1].headers['Content-Type']).to.be.undefined;
+
+            const formData = new FormData();
+            formData.append('something', 'hi');
+            formData.append('somethingElse[]', 'hey');
+            formData.append('somethingElse[]', 'ho');
+            expect(myClient.fetch.args[0][1].body).to.equal(formData);
+          });
+        });
+
         it('encodes body as URLSearchParams when encoding is x-www-form-urlencoded');
         it('does nothing to body and uses default headers when encoding is set to false');
       });
