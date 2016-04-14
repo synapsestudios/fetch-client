@@ -206,8 +206,28 @@ describe('helpers & defaults', () => {
       });
 
       describe('encode based on default encoding', () => {
-        it('sets content type to application/json and json encodes when encoding is json');
-        it('sets content type to text/plain and does nothing to body when encoding is text');
+        it('sets content type to application/json and json encodes when encoding is json', () => {
+          const myClient = new Client({ encoding: 'json' });
+          myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+          const promise = myClient.post('something', { test: 'foo' });
+          return expect(promise).to.be.fulfilled.then(() => {
+            expect(myClient.fetch.args[0][1].headers['Content-Type']).to.equal('application/json');
+            expect(myClient.fetch.args[0][1].body).to.equal(JSON.stringify({ test: 'foo' }));
+          });
+        });
+
+        it('sets content type to text/plain and does nothing to body when encoding is text', () => {
+          const myClient = new Client({ encoding: 'text' });
+          myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+          const promise = myClient.post('something', 'test');
+          return expect(promise).to.be.fulfilled.then(() => {
+            expect(myClient.fetch.args[0][1].headers['Content-Type']).to.equal('text/plain');
+            expect(myClient.fetch.args[0][1].body).to.equal('test');
+          });
+        });
+
         it('encodes body as FormData when encoding is form-data');
         it('encodes body as URLSearchParams when encoding is x-www-form-urlencoded');
       });
