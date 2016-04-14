@@ -1,4 +1,5 @@
 export const allowedEncodings = [
+  false,
   'json',
   'text',
   'form-data',

@@ -6,7 +6,11 @@ import { defaults as _defaults, allowedEncodings } from './defaults';
 
 export default class Client {
   constructor(defaults) {
-    if (defaults && defaults.encoding && allowedEncodings.indexOf(defaults.encoding) === -1) {
+    const encodingIsInvalid = () => defaults &&
+      typeof defaults.encoding !== 'undefined' &&
+      allowedEncodings.indexOf(defaults.encoding) === -1;
+
+    if (encodingIsInvalid()) {
       throw new Error(`${defaults.encoding} is not an allowed encoding value.`);
     }
 
