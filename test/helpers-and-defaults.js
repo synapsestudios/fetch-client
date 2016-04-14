@@ -207,10 +207,15 @@ describe('helpers & defaults', () => {
 
       describe('encode based on default encoding', () => {
         it('sets content type to application/json and json encodes when encoding is json', () => {
-          const myClient = new Client({ encoding: 'json' });
+          const defaults = { encoding: 'json' };
+          defaults[method].headers = {
+            'Content-Type': 'something/weird',
+          };
+
+          const myClient = new Client(defaults);
           myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
-          const promise = myClient.post('something', { test: 'foo' });
+          const promise = myClient[method]('something', { test: 'foo' });
           return expect(promise).to.be.fulfilled.then(() => {
             expect(myClient.fetch.args[0][1].headers['Content-Type']).to.equal('application/json');
             expect(myClient.fetch.args[0][1].body).to.equal(JSON.stringify({ test: 'foo' }));
@@ -221,7 +226,7 @@ describe('helpers & defaults', () => {
           const myClient = new Client({ encoding: 'text' });
           myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
-          const promise = myClient.post('something', 'test');
+          const promise = myClient[method]('something', 'test');
           return expect(promise).to.be.fulfilled.then(() => {
             expect(myClient.fetch.args[0][1].headers['Content-Type']).to.equal('text/plain');
             expect(myClient.fetch.args[0][1].body).to.equal('test');
@@ -232,7 +237,7 @@ describe('helpers & defaults', () => {
           const myClient = new Client({ encoding: 'form-data' });
           myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
-          const promise = myClient.post('something', {
+          const promise = myClient[method]('something', {
             something: 'hi',
             someArray: ['hey', 'ho'],
             someObject: { foo: 'bar' },
@@ -259,7 +264,7 @@ describe('helpers & defaults', () => {
           const myClient = new Client({ encoding: 'x-www-form-urlencoded' });
           myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
-          const promise = myClient.post('something', {
+          const promise = myClient[method]('something', {
             something: 'hi',
             someArray: ['hey', 'ho'],
             someObject: { foo: 'bar' },
@@ -283,17 +288,16 @@ describe('helpers & defaults', () => {
         });
 
         it('does nothing to body and uses default Content-Type when encoding is false', () => {
-          const myClient = new Client({
-            encoding: false,
-            post: {
-              headers: {
-                'Content-Type': 'something/weird',
-              },
+          const defaults = { encoding: false };
+          defaults[method] = {
+            headers: {
+              'Content-Type': 'something/weird',
             },
-          });
+          };
+          const myClient = new Client(defaults);
 
           myClient.fetch = sinon.spy(() => Promise.resolve(true));
-          expect(myClient.post('something', 'test')).to.be.fulfilled.then(() => {
+          expect(myClient[method]('something', 'test')).to.be.fulfilled.then(() => {
             expect(myClient.fetch.args[0][1].headers['Content-Type']).to.equal('something/weird');
             expect(myClient.fetch.args[0][1].body).to.equal('test');
           });
