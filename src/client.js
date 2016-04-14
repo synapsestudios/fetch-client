@@ -123,6 +123,32 @@ export default class Client {
   }
 
   /* ---- HELPERS ---- */
+  _encode(body, contentType) {
+    let _body = body;
+    if (_body instanceof FormData || _body instanceof URLSearchParams) {
+      return { body: _body, contentType: false };
+    }
+
+    if (this.defaults.encoding === 'json') {
+      _body = JSON.stringify(_body);
+    }
+
+    return { body: _body };
+  }
+
+  _buildOptionsWithBody(method, body, options) {
+    let _options = { ...this.defaults[method] };
+    _options = merge.recursive(true, _options, options);
+
+    const { body: encodedBody, contentType } = this._encode(body, _options.headers['Content-Type']);
+    if (contentType === false) {
+      delete _options.headers['Content-Type'];
+    }
+
+    _options.body = encodedBody;
+    return _options;
+  }
+
   get(path, options) {
     const _options = options || {};
     _options.method = 'get';
@@ -130,25 +156,19 @@ export default class Client {
   }
 
   post(path, body, options) {
-    let _options = { ...this.defaults.post };
-    _options.body = JSON.stringify(body);
-    _options = merge.recursive(true, _options, options);
+    const _options = this._buildOptionsWithBody('post', body, options);
     _options.method = 'post';
     return this.fetch(path, _options);
   }
 
   put(path, body, options) {
-    let _options = { ...this.defaults.put };
-    _options.body = JSON.stringify(body);
-    _options = merge.recursive(true, _options, options);
+    const _options = this._buildOptionsWithBody('put', body, options);
     _options.method = 'put';
     return this.fetch(path, _options);
   }
 
   patch(path, body, options) {
-    let _options = { ...this.defaults.patch };
-    _options.body = JSON.stringify(body);
-    _options = merge.recursive(true, _options, options);
+    const _options = this._buildOptionsWithBody('patch', body, options);
     _options.method = 'patch';
     return this.fetch(path, _options);
   }
