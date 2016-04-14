@@ -129,15 +129,18 @@ export default class Client {
   /* ---- HELPERS ---- */
   _encode(body, contentType) {
     let _body = body;
+    let _contentType = contentType;
+
     if (_body instanceof FormData || _body instanceof URLSearchParams) {
       return { body: _body, contentType: false };
     }
 
     if (this.defaults.encoding === 'json') {
       _body = JSON.stringify(_body);
+      _contentType = 'application/json';
     }
 
-    return { body: _body };
+    return { body: _body, contentType: _contentType };
   }
 
   _buildOptionsWithBody(method, body, options) {
@@ -147,6 +150,8 @@ export default class Client {
     const { body: encodedBody, contentType } = this._encode(body, _options.headers['Content-Type']);
     if (contentType === false) {
       delete _options.headers['Content-Type'];
+    } else {
+      _options.headers['Content-Type'] = contentType;
     }
 
     _options.body = encodedBody;
