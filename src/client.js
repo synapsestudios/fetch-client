@@ -127,6 +127,41 @@ export default class Client {
   }
 
   /* ---- HELPERS ---- */
+
+  _formAppendArrayOrObject(formObject, data, key) {
+    if (Array.isArray(data)) {
+      data.forEach((val) => {
+        if (typeof(val) === 'object') {
+          this._formAppendArrayOrObject(formObject, val, `${key}[]`);
+        } else {
+          formObject.append(`${key}[]`, val);
+        }
+      });
+    } else {
+      Object.keys(data).forEach(val => {
+        if (typeof(data[val]) === 'object') {
+          this._formAppendArrayOrObject(formObject, data[val], `${key}[${val}]`);
+        } else {
+          formObject.append(`${key}[${val}]`, data[val]);
+        }
+      });
+    }
+  }
+
+  _encodeForm(body, contentType) {
+    // console.log(body);
+    const formObject = new FormData();
+    Object.keys(body).forEach((val) => {
+      if (typeof(body[val]) === 'object') {
+        this._formAppendArrayOrObject(formObject, body[val], `${val}`);
+      } else {
+        formObject.append(val, body[val]);
+      }
+    });
+
+    return formObject;
+  }
+
   _encode(body, contentType) {
     let _body = body;
     let _contentType = contentType;
@@ -142,6 +177,10 @@ export default class Client {
         break;
       case 'text':
         _contentType = 'text/plain';
+        break;
+      case 'form-data':
+        _body = this._encodeForm(_body, _contentType);
+        _contentType = undefined;
         break;
       default:
     }
