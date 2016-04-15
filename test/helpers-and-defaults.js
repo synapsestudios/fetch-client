@@ -1,4 +1,4 @@
-/* eslint no-unused-vars:0, no-unused-expressions:0 no-loop-func:0 */
+/* eslint no-unused-vars:0, no-unused-expressions:0 no-loop-func:0, no-shadow:0 */
 import chai, { expect } from 'chai';
 import sinon from 'sinon';
 
@@ -236,12 +236,22 @@ describe('helpers & defaults', () => {
         });
 
         it('encodes body as FormData when encoding is form-data', () => {
+          GLOBAL.FormData = function FormData() {
+            return {
+              appends: [],
+              append: function append(key, val) {
+                this.appends.push({ key, val });
+              },
+            };
+          };
+
           const myClient = new Client({ encoding: 'form-data' });
           myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
           const promise = myClient[method]('something', {
             something: 'hi',
             someArray: ['hey', 'ho'],
+            someNestedArray: ['hey', ['ho', 'foo']],
             someObject: { foo: 'bar' },
             someRecursive: { foo: ['array'], bar: 'string', baz: { val: 'object' } },
           });
@@ -250,15 +260,20 @@ describe('helpers & defaults', () => {
             // when using FormData fetch sets content type correctly on its own
             expect(myClient.fetch.args[0][1].headers['Content-Type']).to.be.undefined;
 
-            const formData = new FormData();
+            const formData = new GLOBAL.FormData();
             formData.append('something', 'hi');
-            formData.append('somethingArray[]', 'hey');
-            formData.append('somethingArray[]', 'ho');
+            formData.append('someArray[]', 'hey');
+            formData.append('someArray[]', 'ho');
+            formData.append('someNestedArray[]', 'hey');
+            formData.append('someNestedArray[][]', 'ho');
+            formData.append('someNestedArray[][]', 'foo');
             formData.append('someObject[foo]', 'bar');
             formData.append('someRecursive[foo][]', 'array');
             formData.append('someRecursive[bar]', 'string');
             formData.append('someRecursive[baz][val]', 'object');
-            expect(myClient.fetch.args[0][1].body).to.equal(formData);
+            expect(myClient.fetch.args[0][1].body.appends).to.deep.equal(formData.appends);
+
+            GLOBAL.FormData = FormData;
           });
         });
 
