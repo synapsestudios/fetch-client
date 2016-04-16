@@ -3,13 +3,23 @@ import * as events from './events';
 import Client from './client';
 
 export default class ResumableUploader extends Client {
-  upload(path, fileToUpload, options = {}) {
-    const resumable = new Resumable({
-      headers: options.headers,
-      target: `${this.defaults.url}${path}`,
-      method: 'octet',
-      query: options.query || {},
-    });
+  upload(path, fileToUpload, _options = {}) {
+
+    // Set defaults
+    const options = Object.assign(
+      {},
+      {
+        headers: this.defaults.post.headers,
+        target: `${this.defaults.url}${path}`,
+        method: 'multipart',
+        query: {},
+        testChunks: false,
+        chunkSize: 1000,
+      },
+      _options
+    );
+
+    const resumable = new Resumable(options);
 
     if (! resumable.support) {
       throw new Error('resumable.js not supported', resumable);
@@ -47,5 +57,14 @@ export default class ResumableUploader extends Client {
         );
       });
     });
+  }
+
+  _getDefaults() {
+    return {
+      post: {
+        method: 'post',
+        headers: {},
+      },
+    };
   }
 }

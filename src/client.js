@@ -3,33 +3,9 @@ import * as events from './events';
 import MiddlewareError from './middleware-error';
 import merge from 'merge';
 
-const _defaults = {
-  post: {
-    method: 'post',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-  },
-  put: {
-    method: 'post',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-  },
-  patch: {
-    method: 'post',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-  },
-};
-
 export default class Client {
   constructor(defaults) {
-    this.defaults = merge.recursive(true, _defaults, defaults);
+    this.defaults = merge.recursive(true, this._getDefaults(), defaults);
 
     if (this.defaults.url) {
       this.defaults.sep = this.defaults.url[this.defaults.url.length - 1] === '/' ? '' : '/';
@@ -37,6 +13,32 @@ export default class Client {
 
     this.eventEmitter = new EventEmitter2();
     this._middleware = [];
+  }
+
+  _getDefaults() {
+    return {
+      post: {
+        method: 'post',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      },
+      put: {
+        method: 'post',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      },
+      patch: {
+        method: 'post',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      },
+    };
   }
 
   _callMiddlewareMethod(method, mutableArgIdx, earlyExit, ...args) {
