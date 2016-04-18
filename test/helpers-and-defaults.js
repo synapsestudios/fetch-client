@@ -278,6 +278,15 @@ describe('helpers & defaults', () => {
         });
 
         it('encodes body as URLSearchParams when encoding is x-www-form-urlencoded', () => {
+          GLOBAL.URLSearchParams = function FormData() {
+            return {
+              appends: [],
+              append: function append(key, val) {
+                this.appends.push({ key, val });
+              },
+            };
+          };
+
           const myClient = new Client({ encoding: 'x-www-form-urlencoded' });
           myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
@@ -292,15 +301,17 @@ describe('helpers & defaults', () => {
             // when using FormData fetch sets content type correctly on its own
             expect(myClient.fetch.args[0][1].headers['Content-Type']).to.be.undefined;
 
-            const formData = new URLSearchParams();
+            const formData = new GLOBAL.URLSearchParams();
             formData.append('something', 'hi');
-            formData.append('somethingArray[]', 'hey');
-            formData.append('somethingArray[]', 'ho');
+            formData.append('someArray[]', 'hey');
+            formData.append('someArray[]', 'ho');
             formData.append('someObject[foo]', 'bar');
             formData.append('someRecursive[foo][]', 'array');
             formData.append('someRecursive[bar]', 'string');
             formData.append('someRecursive[baz][val]', 'object');
-            expect(myClient.fetch.args[0][1].body).to.equal(formData);
+            expect(myClient.fetch.args[0][1].body.appends).to.deep.equal(formData.appends);
+
+            GLOBAL.URLSearchParams = URLSearchParams;
           });
         });
 
