@@ -148,9 +148,8 @@ export default class Client {
     }
   }
 
-  _encodeForm(body, contentType) {
+  _encodeForm(body, formObject, contentType) {
     // console.log(body);
-    const formObject = new FormData();
     Object.keys(body).forEach((val) => {
       if (typeof(body[val]) === 'object') {
         this._formAppendArrayOrObject(formObject, body[val], `${val}`);
@@ -170,6 +169,7 @@ export default class Client {
       return { body: _body, contentType: false };
     }
 
+    let formObject;
     switch (this.defaults.encoding) {
       case 'json':
         _body = JSON.stringify(_body);
@@ -179,7 +179,13 @@ export default class Client {
         _contentType = 'text/plain';
         break;
       case 'form-data':
-        _body = this._encodeForm(_body, _contentType);
+        formObject = new FormData();
+        _body = this._encodeForm(_body, formObject, _contentType);
+        _contentType = undefined;
+        break;
+      case 'x-www-form-urlencoded':
+        formObject = new URLSearchParams();
+        _body = this._encodeForm(_body, formObject, _contentType);
         _contentType = undefined;
         break;
       default:
