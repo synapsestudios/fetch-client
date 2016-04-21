@@ -12,21 +12,18 @@ export const defaults = {
     method: 'post',
     headers: {
       Accept: 'application/json',
-      'Content-Type': 'application/json',
     },
   },
   put: {
     method: 'post',
     headers: {
       Accept: 'application/json',
-      'Content-Type': 'application/json',
     },
   },
   patch: {
     method: 'post',
     headers: {
       Accept: 'application/json',
-      'Content-Type': 'application/json',
     },
   },
 };

@@ -148,8 +148,7 @@ export default class Client {
     }
   }
 
-  _encodeForm(body, formObject, contentType) {
-    // console.log(body);
+  _encodeForm(body, formObject) {
     Object.keys(body).forEach((val) => {
       if (typeof(body[val]) === 'object') {
         this._formAppendArrayOrObject(formObject, body[val], `${val}`);
@@ -161,31 +160,58 @@ export default class Client {
     return formObject;
   }
 
+  _getEncodingTypeFromContentType(contentType) {
+    let encodingType = false;
+    if (contentType) {
+      if (contentType.match(/text\/.+/i)) {
+        encodingType = 'text';
+      } else {
+        switch (contentType) {
+          case 'application/json':
+            encodingType = 'json';
+            break;
+          case 'multipart/form-data':
+            encodingType = 'form-data';
+            break;
+          case 'application/x-www-form-urlencoded':
+            encodingType = 'x-www-form-urlencoded';
+            break;
+          default:
+        }
+      }
+    }
+
+    return encodingType;
+  }
+
   _encode(body, contentType) {
     let _body = body;
     let _contentType = contentType;
+
+    let encodingType = this._getEncodingTypeFromContentType(_contentType);
+    encodingType = encodingType || this.defaults.encoding;
 
     if (_body instanceof FormData || _body instanceof URLSearchParams) {
       return { body: _body, contentType: false };
     }
 
     let formObject;
-    switch (this.defaults.encoding) {
+    switch (encodingType) {
       case 'json':
         _body = JSON.stringify(_body);
         _contentType = 'application/json';
         break;
       case 'text':
-        _contentType = 'text/plain';
+        _contentType = _contentType || 'text/plain';
         break;
       case 'form-data':
         formObject = new FormData();
-        _body = this._encodeForm(_body, formObject, _contentType);
+        _body = this._encodeForm(_body, formObject);
         _contentType = undefined;
         break;
       case 'x-www-form-urlencoded':
         formObject = new URLSearchParams();
-        _body = this._encodeForm(_body, formObject, _contentType);
+        _body = this._encodeForm(_body, formObject);
         _contentType = undefined;
         break;
       default:
