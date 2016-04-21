@@ -9,6 +9,7 @@ chai.use(chaiAsPromised);
 chai.use(sinonChai);
 
 import Client from '../lib/client';
+import FormObjectMock from './form-object-mock';
 
 // polyfills
 import { Request, Response } from 'whatwg-fetch';
@@ -236,14 +237,7 @@ describe('helpers & defaults', () => {
         });
 
         it('encodes body as FormData when encoding is form-data', () => {
-          GLOBAL.FormData = function FormData() {
-            return {
-              appends: [],
-              append: function append(key, val) {
-                this.appends.push({ key, val });
-              },
-            };
-          };
+          GLOBAL.FormData = FormObjectMock;
 
           const myClient = new Client({ encoding: 'form-data' });
           myClient.fetch = sinon.spy(() => Promise.resolve('test'));
@@ -278,14 +272,7 @@ describe('helpers & defaults', () => {
         });
 
         it('encodes body as URLSearchParams when encoding is x-www-form-urlencoded', () => {
-          GLOBAL.URLSearchParams = function FormData() {
-            return {
-              appends: [],
-              append: function append(key, val) {
-                this.appends.push({ key, val });
-              },
-            };
-          };
+          GLOBAL.URLSearchParams = FormObjectMock;
 
           const myClient = new Client({ encoding: 'x-www-form-urlencoded' });
           myClient.fetch = sinon.spy(() => Promise.resolve('test'));
@@ -333,10 +320,57 @@ describe('helpers & defaults', () => {
       });
 
       describe('encode based on Content-Type', () => {
-        it('sends FormData in body Content-Type is form-data');
-        it('sends URLSearchParams Content-Type is x-www-form-urlencoded');
-        it('sends a JSON string when Content-Type is application/json');
-        it('does nothing to body when Content-type is text/*');
+        it('sends FormData in body Content-Type is form-data', () => {
+          const myClient = new Client();
+          myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+          const promise = myClient.fetch('path', { foo: 'bar' }, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+
+          return expect(promise).to.have.been.fulfilled.then(() => {
+            expect(myClient.fetch.args[0][1]).to.be.instanceof(FormData);
+          });
+        });
+
+        it('sends URLSearchParams Content-Type is x-www-form-urlencoded', () => {
+          const myClient = new Client();
+          myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+          const promise = myClient.fetch('path', { foo: 'bar' }, {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          });
+
+          return expect(promise).to.have.been.fulfilled.then(() => {
+            expect(myClient.fetch.args[0][1]).to.be.instanceof(URLSearchParams);
+          });
+        });
+
+        it('sends a JSON string when Content-Type is application/json', () => {
+          const myClient = new Client();
+          myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+          const promise = myClient.fetch('path', { foo: 'bar' }, {
+            headers: { 'Content-Type': 'application/json' },
+          });
+
+          return expect(promise).to.have.been.fulfilled.then(() => {
+            expect(myClient.fetch.args[0][1]).to.equal(JSON.stringify({ foo: 'bar' }));
+          });
+        });
+
+        it('does nothing to body when Content-type is text/*', () => {
+          const myClient = new Client();
+          myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+          const promise = myClient.fetch('path', 'test', {
+            headers: { 'Content-Type': 'text/anything' },
+          });
+
+          return expect(promise).to.have.been.fulfilled.then(() => {
+            expect(myClient.fetch.args[0][1]).to.equal('test');
+          });
+        });
       });
     });
   }
