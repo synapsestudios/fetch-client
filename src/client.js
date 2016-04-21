@@ -2,33 +2,18 @@ import EventEmitter2 from 'eventemitter2';
 import * as events from './events';
 import MiddlewareError from './middleware-error';
 import merge from 'merge';
-
-const _defaults = {
-  post: {
-    method: 'post',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-  },
-  put: {
-    method: 'post',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-  },
-  patch: {
-    method: 'post',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-  },
-};
+import { defaults as _defaults, allowedEncodings } from './defaults';
 
 export default class Client {
   constructor(defaults) {
+    const encodingIsInvalid = () => defaults &&
+      typeof defaults.encoding !== 'undefined' &&
+      allowedEncodings.indexOf(defaults.encoding) === -1;
+
+    if (encodingIsInvalid()) {
+      throw new Error(`${defaults.encoding} is not an allowed encoding value.`);
+    }
+
     this.defaults = merge.recursive(true, _defaults, defaults);
 
     if (this.defaults.url) {
@@ -142,6 +127,114 @@ export default class Client {
   }
 
   /* ---- HELPERS ---- */
+
+  _formAppendArrayOrObject(formObject, data, key) {
+    if (Array.isArray(data)) {
+      data.forEach((val) => {
+        if (typeof(val) === 'object') {
+          this._formAppendArrayOrObject(formObject, val, `${key}[]`);
+        } else {
+          formObject.append(`${key}[]`, val);
+        }
+      });
+    } else {
+      Object.keys(data).forEach(val => {
+        if (typeof(data[val]) === 'object') {
+          this._formAppendArrayOrObject(formObject, data[val], `${key}[${val}]`);
+        } else {
+          formObject.append(`${key}[${val}]`, data[val]);
+        }
+      });
+    }
+  }
+
+  _encodeForm(body, formObject) {
+    Object.keys(body).forEach((val) => {
+      if (typeof(body[val]) === 'object') {
+        this._formAppendArrayOrObject(formObject, body[val], `${val}`);
+      } else {
+        formObject.append(val, body[val]);
+      }
+    });
+
+    return formObject;
+  }
+
+  _getEncodingTypeFromContentType(contentType) {
+    let encodingType = false;
+    if (contentType) {
+      if (contentType.match(/text\/.+/i)) {
+        encodingType = 'text';
+      } else {
+        switch (contentType) {
+          case 'application/json':
+            encodingType = 'json';
+            break;
+          case 'multipart/form-data':
+            encodingType = 'form-data';
+            break;
+          case 'application/x-www-form-urlencoded':
+            encodingType = 'x-www-form-urlencoded';
+            break;
+          default:
+        }
+      }
+    }
+
+    return encodingType;
+  }
+
+  _encode(body, contentType) {
+    let _body = body;
+    let _contentType = contentType;
+
+    let encodingType = this._getEncodingTypeFromContentType(_contentType);
+    encodingType = encodingType || this.defaults.encoding;
+
+    if (_body instanceof FormData || _body instanceof URLSearchParams) {
+      return { body: _body, contentType: false };
+    }
+
+    let formObject;
+    switch (encodingType) {
+      case 'json':
+        _body = JSON.stringify(_body);
+        _contentType = 'application/json';
+        break;
+      case 'text':
+        _contentType = _contentType || 'text/plain';
+        break;
+      case 'form-data':
+        formObject = new FormData();
+        _body = this._encodeForm(_body, formObject);
+        _contentType = undefined;
+        break;
+      case 'x-www-form-urlencoded':
+        formObject = new URLSearchParams();
+        _body = this._encodeForm(_body, formObject);
+        _contentType = undefined;
+        break;
+      default:
+    }
+
+    return { body: _body, contentType: _contentType };
+  }
+
+  _buildOptionsWithBody(method, body, options) {
+    let _options = { ...this.defaults[method] };
+    _options = merge.recursive(true, _options, options);
+
+    const { body: encodedBody, contentType } = this._encode(body, _options.headers['Content-Type']);
+    if (contentType === false) {
+      delete _options.headers['Content-Type'];
+    } else {
+      _options.headers['Content-Type'] = contentType;
+    }
+
+    _options.body = encodedBody;
+    return _options;
+  }
+
   get(path, options) {
     const _options = options || {};
     _options.method = 'get';
@@ -149,25 +242,19 @@ export default class Client {
   }
 
   post(path, body, options) {
-    let _options = { ...this.defaults.post };
-    _options.body = JSON.stringify(body);
-    _options = merge.recursive(true, _options, options);
+    const _options = this._buildOptionsWithBody('post', body, options);
     _options.method = 'post';
     return this.fetch(path, _options);
   }
 
   put(path, body, options) {
-    let _options = { ...this.defaults.put };
-    _options.body = JSON.stringify(body);
-    _options = merge.recursive(true, _options, options);
+    const _options = this._buildOptionsWithBody('put', body, options);
     _options.method = 'put';
     return this.fetch(path, _options);
   }
 
   patch(path, body, options) {
-    let _options = { ...this.defaults.patch };
-    _options.body = JSON.stringify(body);
-    _options = merge.recursive(true, _options, options);
+    const _options = this._buildOptionsWithBody('patch', body, options);
     _options.method = 'patch';
     return this.fetch(path, _options);
   }
