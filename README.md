@@ -20,7 +20,7 @@ var Client = require('synapi-client');
 
 var myClient = new Client({ url: 'http://my-api.com' });
 
-myClient.get('coolthings')
+myClient.get('coolthings') // performs GET request to http://my-api.com/coolthings
   .then(response => {
     // do something with the Response
   });
@@ -58,3 +58,33 @@ myClient.get('coolthings')
 // on success
 // fetch then called
 ```
+
+### Middleware
+
+Our middleware implementation allows you to register objects with methods that will trigger during request lifecycle. Middleware is more robust than event callbacks because they have access to the event emitter, they are allowed to alter the Response object, and they can register their own helper methods on your client object.
+
+The most basic implementation of a middleware looks like this
+
+```
+var myMiddleware = {
+  onStart: function(request) {
+    return request;
+  }
+}
+```
+
+#### Middleware Methods
+Middleware methods correspond to events and fire under the same conditions with the same arguments.
+
+| Method Name | Trigger Condition                                           | Args              |
+| ----------- | ----------------------------------------------------------- | ----------------- |
+| onStart     | Fires for every request before the request is even started. | Request           |
+| onSuccess   | Fires when a request returns an http status < 400           | Request, Response |
+| onFail      | Fires when a request returns an http status >= 400          | Request, Response |
+| onError     | Fires when a request errors out. Server timeouts, etc       | Request, err      |
+
+#### Preventing the request from happening with onStart()
+
+#### Altering the response with onSuccess() and onFail()
+
+#### Triggering Custom Events
