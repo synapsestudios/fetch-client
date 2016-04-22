@@ -71,6 +71,8 @@ var myMiddleware = {
     return request;
   }
 }
+
+myClient.addMiddleware(myMiddleware);
 ```
 
 #### Middleware Methods
@@ -84,7 +86,27 @@ Middleware methods correspond to events and fire under the same conditions with 
 | onError     | Fires when a request errors out. Server timeouts, etc       | Request, err      |
 
 #### Preventing the request from happening with onStart()
+If your middlewares `onStart` method returns false or throws an error then the request will be aborted and the promise will be rejected.
+
+```
+var myMiddleware = {
+  onStart: function(request) {
+    return false;
+  }
+}
+
+myClient.addMiddleware(myMiddleware);
+myClient.get('coolthings')
+  .then(response => {
+    // will never execute
+  })
+  .catch(err => {
+    // onStart returned false so we get here
+  });
+```
 
 #### Altering the response with onSuccess() and onFail()
 
 #### Triggering Custom Events
+
+#### Removing middleware
