@@ -128,7 +128,7 @@ class MyMiddleware {
   }
 }
 
-myClient.addMiddleware(new myMiddleware());
+myClient.addMiddleware(new MyMiddleware());
 
 // register a handler for our custom event
 myClient.on('custom_event', request => {
@@ -139,6 +139,21 @@ myClient.get('coolthings').then(response => {
   // handle response
 });
 ```
+
 #### Removing middleware
+By adding a name to your middleware object you can then reference it and remove it. Naming middleware is only required if you wish to use this feature to remove middleware.
+
+```
+var myMiddleware {
+  name: 'myMiddleware',
+  onStart: function(request) {
+    return request;
+  }
+}
+
+myClient.addMiddleware(myMiddleware);
+myClient.removeMiddleware('myMiddleware');
+```
+
 
 #### Adding helper methods
