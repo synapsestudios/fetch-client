@@ -39,6 +39,36 @@ The client object provides these methods for making requests:
 The get, post, put, patch and delete helper methods are shortcuts that set the HTTP method and also will encode the body appropriately. Your body will be left alone or encoded as json, FormData or URLSearchParams depending on the 'Content-Type' header and the 'encoding' value set in your client's [defaults](#defaults). The options argument is passed directly on to the `fetch` call and is where you set any custom headers and other request options. See <https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch> and <https://github.com/github/fetch> for more information on how to use fetch options.
 
 ### Defaults
+Configuration defaults can be provided when instantiating the client object. These defaults are used by the get, post, put, patch and delete helper methods to set default options on the request as well as defining a default encoding. By defining a default encoding value the client will be able to determine how (or whether) to modify the `body` argument in helper methods.
+
+```
+var defaults = {
+  encoding: 'json',
+  get: {
+    // default fetch options for GET requests
+  },
+  post: {
+    // default fetch options for POST requests
+  },
+  put: {
+    // default fetch options for PUT requests
+  },
+  patch: {
+    // default fetch options for PATCH requests
+  },
+  delete: {
+    // default fetch options for DELETE requests
+  },
+}
+```
+
+#### Encoding
+The `encoding` property in the defaults object determines how the http request helper methods attempt to encode the body of the request. Valid values are:
+  - 'json' - Runs the body through `JSON.stringify()`. Sets 'Content-Type' to 'application/json'
+  - 'text' - Does nothing to the body. Sets 'Content-Type' to 'text/plain'
+  - 'form-data' - Encodes body as FormData object. Lets fetch determine 'Content-Type' ('multipart/form-data')
+  - 'x-www-form-urlencoded' - Encodes body as URLSearchParams. Lets fetch determine 'Content-Type' ('application/x-www-form-urlencoded')
+  - false - does nothing to body, does nothing to 'Content-Type'
 
 ### Events
 
