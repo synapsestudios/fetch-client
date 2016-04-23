@@ -157,3 +157,18 @@ myClient.removeMiddleware('myMiddleware');
 
 
 #### Adding helper methods
+
+```
+var myMiddleware = {
+  helpers : {
+    newHelperFunction: function() {
+      // do something
+    }
+  }
+}
+
+myClient.addMiddleware(myMiddleware);
+
+// now you can call your custom helper methods on the client object
+myClient.newHelperFunction();
+```
