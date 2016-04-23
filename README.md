@@ -155,7 +155,6 @@ myClient.addMiddleware(myMiddleware);
 myClient.removeMiddleware('myMiddleware');
 ```
 
-
 #### Adding helper methods
 
 ```
