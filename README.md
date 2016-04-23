@@ -85,7 +85,7 @@ Middleware methods correspond to events and fire under the same conditions with 
 | onFail      | Fires when a request returns an http status >= 400          | Request, Response |
 | onError     | Fires when a request errors out. Server timeouts, etc       | Request, err      |
 
-#### Preventing the request from happening with onStart()
+#### Aborting the request with onStart()
 If your middlewares `onStart` method returns false or throws an error then the request will be aborted and the promise will be rejected.
 
 ```
@@ -106,7 +106,37 @@ myClient.get('coolthings')
 ```
 
 #### Altering the response with onSuccess() and onFail()
+class JsonResponseMiddleware {
+  function onSuccess(request, response) {
+    return response.json();
+  }
+}
+
+myClient.addMiddleware(new JsonResponseMiddleware());
+myClient.get('coolthings').then(json => {
+  // we have json now!
+});
 
 #### Triggering Custom Events
+class MyMiddleware {
+  function onStart(request) {
+    // emit a custom event
+    this.client.eventEmitter.emit('custom_event', request);
+    return request;
+  }
+}
+
+myClient.addMiddleware(new myMiddleware());
+
+// register a handler for our custom event
+myClient.on('custom_event', request => {
+  // do something
+});
+
+myClient.get('coolthings').then(response => {
+  // handle response
+});
 
 #### Removing middleware
+
+#### Adding helper methods
