@@ -106,6 +106,7 @@ myClient.get('coolthings')
 ```
 
 #### Altering the response with onSuccess() and onFail()
+```
 class JsonResponseMiddleware {
   function onSuccess(request, response) {
     return response.json();
@@ -116,8 +117,9 @@ myClient.addMiddleware(new JsonResponseMiddleware());
 myClient.get('coolthings').then(json => {
   // we have json now!
 });
-
+```
 #### Triggering Custom Events
+```
 class MyMiddleware {
   function onStart(request) {
     // emit a custom event
@@ -136,7 +138,7 @@ myClient.on('custom_event', request => {
 myClient.get('coolthings').then(response => {
   // handle response
 });
-
+```
 #### Removing middleware
 
 #### Adding helper methods
