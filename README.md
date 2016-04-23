@@ -29,12 +29,12 @@ myClient.get('coolthings') // performs GET request to http://my-api.com/coolthin
 ### Client Methods
 
 The client object provides these methods for making requests:
-  - fetch(body, options) - wraps fetch and passes body options into the fetch call. Provides event/middleware features.
-  - get(body, options)
-  - post(body, options)
-  - put(body, options)
-  - patch(body, options)
-  - delete(body, options)
+  - fetch(path, body, options) - wraps fetch and passes body options into the fetch call. Provides event/middleware features.
+  - get(path, body, options)
+  - post(path, body, options)
+  - put(path, body, options)
+  - patch(path, body, options)
+  - delete(path, body, options)
 
 The get, post, put, patch and delete helper methods are shortcuts that set the HTTP method and also will encode the body appropriately. Your body will be left alone or encoded as json, FormData or URLSearchParams depending on the 'Content-Type' header and the 'encoding' value set in your client's [defaults](#defaults). The options argument is passed directly on to the `fetch` call and is where you set any custom headers and other request options. See <https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch> and <https://github.com/github/fetch> for more information on how to use fetch options.
 
