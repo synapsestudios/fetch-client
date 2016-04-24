@@ -1,5 +1,6 @@
 src
 test
+.babelrc
 
 npm-debug.log*
 _vimrc_local.vim
