@@ -4,7 +4,6 @@ import Client from './client';
 
 export default class ResumableUploader extends Client {
   upload(path, fileToUpload, _options = {}) {
-
     // Set defaults
     const options = Object.assign(
       {},
