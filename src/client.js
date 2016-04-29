@@ -237,31 +237,31 @@ export default class Client {
 
   get(path, options) {
     const _options = options || {};
-    _options.method = 'get';
+    _options.method = 'GET';
     return this.fetch(path, _options);
   }
 
   post(path, body, options) {
     const _options = this._buildOptionsWithBody('post', body, options);
-    _options.method = 'post';
+    _options.method = 'POST';
     return this.fetch(path, _options);
   }
 
   put(path, body, options) {
     const _options = this._buildOptionsWithBody('put', body, options);
-    _options.method = 'put';
+    _options.method = 'PUT';
     return this.fetch(path, _options);
   }
 
   patch(path, body, options) {
     const _options = this._buildOptionsWithBody('patch', body, options);
-    _options.method = 'patch';
+    _options.method = 'PATCH';
     return this.fetch(path, _options);
   }
 
   delete(path, options) {
     const _options = options || {};
-    _options.method = 'delete';
+    _options.method = 'DELETE';
     return this.fetch(path, _options);
   }
 }

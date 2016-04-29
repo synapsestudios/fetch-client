@@ -59,7 +59,7 @@ describe('helpers & defaults', () => {
       myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
       return myClient.get('test').then(() => {
-        expect(myClient.fetch.args[0][1].method).to.equal('get');
+        expect(myClient.fetch.args[0][1].method).to.equal('GET');
       });
     });
 
@@ -77,7 +77,7 @@ describe('helpers & defaults', () => {
       myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
       return myClient.post('test', { something: 'test' }).then(() => {
-        expect(myClient.fetch.args[0][1].method).to.equal('post');
+        expect(myClient.fetch.args[0][1].method).to.equal('POST');
         expect(myClient.fetch.args[0][1].headers).to.deep.equal({
           Accept: 'application/json',
           'Content-Type': 'application/json',
@@ -96,7 +96,7 @@ describe('helpers & defaults', () => {
         { method: 'notallowed', headers: { Accept: 'test' }, anotherThing: 'cool' }
       )
         .then(() => {
-          expect(myClient.fetch.args[0][1].method).to.equal('post');
+          expect(myClient.fetch.args[0][1].method).to.equal('POST');
           expect(myClient.fetch.args[0][1].headers).to.deep.equal({
             Accept: 'test',
             'Content-Type': 'application/json',
@@ -115,7 +115,7 @@ describe('helpers & defaults', () => {
 
       return myClient.post('test', { something: 'test' })
         .then(() => {
-          expect(myClient.fetch.args[0][1].method).to.equal('post');
+          expect(myClient.fetch.args[0][1].method).to.equal('POST');
           expect(myClient.fetch.args[0][1].headers).to.deep.equal({
             Accept: 'test',
             'Content-Type': 'application/json',
@@ -129,7 +129,7 @@ describe('helpers & defaults', () => {
       myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
       return myClient.delete('test').then(() => {
-        expect(myClient.fetch.args[0][1].method).to.equal('delete');
+        expect(myClient.fetch.args[0][1].method).to.equal('DELETE');
         expect(myClient.fetch.args[0][0]).to.equal('test');
       });
     });
@@ -144,7 +144,7 @@ describe('helpers & defaults', () => {
 
       return myClient.patch('test', { something: 'test' })
         .then(() => {
-          expect(myClient.fetch.args[0][1].method).to.equal('patch');
+          expect(myClient.fetch.args[0][1].method).to.equal('PATCH');
           expect(myClient.fetch.args[0][1].headers).to.deep.equal({
             Accept: 'test',
             'Content-Type': 'application/json',
@@ -163,7 +163,7 @@ describe('helpers & defaults', () => {
 
       return myClient.patch('test', { something: 'test' })
         .then(() => {
-          expect(myClient.fetch.args[0][1].method).to.equal('patch');
+          expect(myClient.fetch.args[0][1].method).to.equal('PATCH');
           expect(myClient.fetch.args[0][1].headers).to.deep.equal({
             Accept: 'test',
             'Content-Type': 'application/json',
@@ -173,8 +173,7 @@ describe('helpers & defaults', () => {
     });
   });
 
-  const methods = ['patch'];
-  // const methods = ['put', 'post', 'patch'];
+  const methods = ['put', 'post', 'patch'];
   let i = 0;
 
   for (i; i < methods.length; i++) {
