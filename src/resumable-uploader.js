@@ -14,6 +14,7 @@ export default class ResumableUploader extends Client {
         query: {},
         testChunks: false,
         chunkSize: 1000,
+        maxChunkRetries: 3,
       },
       _options
     );
