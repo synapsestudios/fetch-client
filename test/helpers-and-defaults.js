@@ -67,8 +67,26 @@ describe('helpers & defaults', () => {
       const myClient = new Client({ url: 'http://something.com' });
       myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
-      return myClient.get('test', { something: 'test' }).then(() => {
+      return myClient.get('test', {}, { something: 'test' }).then(() => {
         expect(myClient.fetch.args[0][1].something).to.equal('test');
+      });
+    });
+
+    it('calls fetch() with query string in path when calling get()', () => {
+      const myClient = new Client({ url: 'http://something.com' });
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.get('test', { foo: 'bar' }).then(() => {
+        expect(myClient.fetch.args[0][0]).to.equal('test?foo=bar');
+      });
+    });
+
+    it('calls fetch() handling empty body when calling get()', () => {
+      const myClient = new Client({ url: 'http://something.com' });
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.get('test', {}).then(() => {
+        expect(myClient.fetch.args[0][0]).to.equal('test');
       });
     });
 
