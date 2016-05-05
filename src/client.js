@@ -235,10 +235,18 @@ export default class Client {
     return _options;
   }
 
-  get(path, options) {
+  get(path, body, options) {
     const _options = options || {};
+    let queryString = '';
+
+    if (body && Object.keys(body).length) {
+      const urlSearchParams = new URLSearchParams();
+      this._encodeForm(body, urlSearchParams);
+      queryString = `?${urlSearchParams.toString()}`;
+    }
+
     _options.method = 'GET';
-    return this.fetch(path, _options);
+    return this.fetch(path + queryString, _options);
   }
 
   post(path, body, options) {
