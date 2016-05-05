@@ -1,6 +1,6 @@
 {
   "name": "synapi-client",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "A wrapper for fetch to make things more easier",
   "main": "lib/index.js",
   "directories": {
