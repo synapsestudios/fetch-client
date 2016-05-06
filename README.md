@@ -1,8 +1,8 @@
 # synapi-client
 
-Wrapper for fetch that adds shortcuts, middleware and events. This is written and maintained by the fine folks at [Synapse Studios](http://www.synapsestudios.com). Our goal is to maintain the fetch api while adding in sensible defaults and hooks to request lifecycle events.
+Wrapper for fetch that adds shortcuts, plugins and events. This is written and maintained by the fine folks at [Synapse Studios](http://www.synapsestudios.com). Our goal is to maintain the fetch api while adding in sensible defaults and hooks to request lifecycle events.
 
-This library is inspired by libraries like [Fetch+](https://github.com/RickWong/fetch-plus) and [http-client](https://github.com/mjackson/http-client). There are differences in the details of how our middleware and events work.
+This library is inspired by libraries like [Fetch+](https://github.com/RickWong/fetch-plus) and [http-client](https://github.com/mjackson/http-client). There are differences in the details of how our plugins and events work.
 
 ## Installation
 
@@ -29,7 +29,7 @@ myClient.get('coolthings') // performs GET request to http://my-api.com/coolthin
 ### Client Methods
 
 The client object provides these methods for making requests:
-  - fetch(path, body, options) - wraps fetch and passes body options into the fetch call. Provides event/middleware features.
+  - fetch(path, body, options) - wraps fetch and passes body options into the fetch call. Provides event/plugin features.
   - get(path, body, options)
   - post(path, body, options)
   - put(path, body, options)
@@ -103,24 +103,24 @@ myClient.get('coolthings')
 // fetch then called
 ```
 
-### Middleware
+### Plugins
 
-Our middleware implementation allows you to register objects with methods that will trigger during request lifecycle. Middleware is more robust than event callbacks because they have access to the event emitter, they are allowed to alter the Response object, and they can register their own helper methods on your client object.
+Our plugin implementation allows you to register objects with methods that will trigger during request lifecycle. Plugins are more robust than event callbacks because they have access to the event emitter, they are allowed to alter the Response object, and they can register their own helper methods on your client object.
 
-The most basic implementation of a middleware looks like this
+The most basic implementation of a plugin looks like this
 
 ```
-var myMiddleware = {
+var myPlugin = {
   onStart: function(request) {
     return request;
   }
 }
 
-myClient.addMiddleware(myMiddleware);
+myClient.addPlugin(myPlugin);
 ```
 
-#### Middleware Methods
-Middleware methods correspond to events and fire under the same conditions with the same arguments.
+#### Plugin Methods
+Plugin methods correspond to events and fire under the same conditions with the same arguments.
 
 | Method Name | Trigger Condition                                           | Args              |
 | ----------- | ----------------------------------------------------------- | ----------------- |
@@ -130,16 +130,16 @@ Middleware methods correspond to events and fire under the same conditions with 
 | onError     | Fires when a request errors out. Server timeouts, etc       | Request, err      |
 
 #### Aborting the request with onStart()
-If your middlewares `onStart` method returns false or throws an error then the request will be aborted and the promise will be rejected.
+If your plugin's `onStart` method returns false or throws an error then the request will be aborted and the promise will be rejected.
 
 ```
-var myMiddleware = {
+var myPlugin = {
   onStart: function(request) {
     return false;
   }
 }
 
-myClient.addMiddleware(myMiddleware);
+myClient.addPlugin(myPlugin);
 myClient.get('coolthings')
   .then(response => {
     // will never execute
@@ -151,20 +151,20 @@ myClient.get('coolthings')
 
 #### Altering the response with onSuccess() and onFail()
 ```
-class JsonResponseMiddleware {
+class JsonResponsePlugin {
   function onSuccess(request, response) {
     return response.json();
   }
 }
 
-myClient.addMiddleware(new JsonResponseMiddleware());
+myClient.addPlugin(new JsonResponsePlugin());
 myClient.get('coolthings').then(json => {
   // we have json now!
 });
 ```
 #### Triggering Custom Events
 ```
-class MyMiddleware {
+class MyPlugin {
   function onStart(request) {
     // emit a custom event
     this.client.eventEmitter.emit('custom_event', request);
@@ -172,7 +172,7 @@ class MyMiddleware {
   }
 }
 
-myClient.addMiddleware(new MyMiddleware());
+myClient.addPlugin(new MyPlugin());
 
 // register a handler for our custom event
 myClient.on('custom_event', request => {
@@ -184,25 +184,25 @@ myClient.get('coolthings').then(response => {
 });
 ```
 
-#### Removing middleware
-By adding a name to your middleware object you can then reference it and remove it. Naming middleware is only required if you wish to use this feature to remove middleware.
+#### Removing plugins
+By adding a name to your plugin object you can then reference it and remove it. Naming plugins is only required if you wish to use this feature to remove plugins.
 
 ```
-var myMiddleware {
-  name: 'myMiddleware',
+var myPlugin {
+  name: 'myPlugin',
   onStart: function(request) {
     return request;
   }
 }
 
-myClient.addMiddleware(myMiddleware);
-myClient.removeMiddleware('myMiddleware');
+myClient.addPlugin(myPlugin);
+myClient.removePlugin('myPlugin');
 ```
 
 #### Adding helper methods
 
 ```
-var myMiddleware = {
+var myPlugin = {
   helpers : {
     newHelperFunction: function() {
       // do something
@@ -210,7 +210,7 @@ var myMiddleware = {
   }
 }
 
-myClient.addMiddleware(myMiddleware);
+myClient.addPlugin(myPlugin);
 
 // now you can call your custom helper methods on the client object
 myClient.newHelperFunction();
