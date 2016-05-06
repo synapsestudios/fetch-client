@@ -63,19 +63,25 @@ export default class Client {
   }
 
   fetch(path, options) {
-    let fullPath = path;
-    if (this.defaults && this.defaults.url) {
-      fullPath = `${this.defaults.url}${this.defaults.sep}${path}`;
-    }
-
-    let request = new Request(fullPath, options);
-    this.eventEmitter.emit(events.REQUEST_START, request);
-
+    let request;
     let onStartError;
-    try {
-      request = this._callOnStarts(request);
-    } catch (err) {
-      onStartError = err;
+
+    if (path instanceof Request) {
+      request = path;
+    } else {
+      let fullPath = path;
+      if (this.defaults && this.defaults.url) {
+        fullPath = `${this.defaults.url}${this.defaults.sep}${path}`;
+      }
+
+      request = new Request(fullPath, options);
+      this.eventEmitter.emit(events.REQUEST_START, request);
+
+      try {
+        request = this._callOnStarts(request);
+      } catch (err) {
+        onStartError = err;
+      }
     }
 
     let fetchPromise;
