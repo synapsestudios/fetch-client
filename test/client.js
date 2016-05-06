@@ -23,6 +23,15 @@ describe('client', () => {
     const myClient = new Client({ arbitrary: 'object' });
   });
 
+  it('handles Response object in fetch call', () => {
+    const myClient = new Client({});
+    GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+
+    const request = new Request();
+    myClient.fetch(request);
+    expect(GLOBAL.fetch).to.be.calledWith(request);
+  });
+
   describe('events', () => {
     it('should emit starting event', () => {
       GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
