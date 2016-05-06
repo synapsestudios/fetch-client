@@ -1,6 +1,6 @@
 import EventEmitter2 from 'eventemitter2';
 import * as events from './events';
-import MiddlewareError from './middleware-error';
+import PluginError from './plugin-error';
 import merge from 'merge';
 import { defaults as _defaults, allowedEncodings } from './defaults';
 
@@ -21,17 +21,17 @@ export default class Client {
     }
 
     this.eventEmitter = new EventEmitter2();
-    this._middleware = [];
+    this._plugins = [];
   }
 
-  _callMiddlewareMethod(method, mutableArgIdx, earlyExit, ...args) {
+  _callPluginMethod(method, mutableArgIdx, earlyExit, ...args) {
     let i = 0;
 
     const shouldContinue = () => (earlyExit ? args[mutableArgIdx] : true);
 
-    while (i < this._middleware.length && shouldContinue()) {
-      if (this._middleware[i][method]) {
-        args[mutableArgIdx] = this._middleware[i][method](...args);
+    while (i < this._plugins.length && shouldContinue()) {
+      if (this._plugins[i][method]) {
+        args[mutableArgIdx] = this._plugins[i][method](...args);
       }
       i += 1;
     }
@@ -40,19 +40,19 @@ export default class Client {
   }
 
   _callOnStarts(request) {
-    return this._callMiddlewareMethod('onStart', 0, true, request);
+    return this._callPluginMethod('onStart', 0, true, request);
   }
 
   _callOnSuccesses(request, response) {
-    return this._callMiddlewareMethod('onSuccess', 1, false, request, response);
+    return this._callPluginMethod('onSuccess', 1, false, request, response);
   }
 
   _callOnFails(request, response) {
-    return this._callMiddlewareMethod('onFail', 1, false, request, response);
+    return this._callPluginMethod('onFail', 1, false, request, response);
   }
 
   _callOnErrors(request, response) {
-    return this._callMiddlewareMethod('onError', 1, false, request, response);
+    return this._callPluginMethod('onError', 1, false, request, response);
   }
   _addHelpers(helpers) {
     if (helpers) {
@@ -99,24 +99,24 @@ export default class Client {
           throw mutatedError;
         });
     } else {
-      const err = onStartError || new MiddlewareError();
+      const err = onStartError || new PluginError();
       fetchPromise = Promise.reject(err);
     }
 
     return fetchPromise;
   }
 
-  addMiddleware(middleware) {
-    middleware.client = this;
-    this._middleware.push(middleware);
-    this._addHelpers(middleware.helpers);
+  addPlugin(plugin) {
+    plugin.client = this;
+    this._plugins.push(plugin);
+    this._addHelpers(plugin.helpers);
   }
 
-  removeMiddleware(name) {
+  removePlugin(name) {
     let i = 0;
-    for (i; i < this._middleware.length; i++) {
-      if (this._middleware[i].name === name) {
-        this._middleware.splice(i, 1);
+    for (i; i < this._plugins.length; i++) {
+      if (this._plugins[i].name === name) {
+        this._plugins.splice(i, 1);
         i -= 1;
       }
     }
