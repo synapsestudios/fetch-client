@@ -23,7 +23,7 @@ describe('client', () => {
     const myClient = new Client({ arbitrary: 'object' });
   });
 
-  it('handles Response object in fetch call', () => {
+  it('handles Request object in fetch call', () => {
     const myClient = new Client({});
     GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
 
