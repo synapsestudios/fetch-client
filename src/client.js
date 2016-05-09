@@ -1,6 +1,6 @@
 import EventEmitter2 from 'eventemitter2';
 import * as events from './events';
-import MiddlewareError from './middleware-error';
+import PluginError from './plugin-error';
 import merge from 'merge';
 import { defaults as _defaults, allowedEncodings } from './defaults';
 
@@ -21,21 +21,21 @@ export default class Client {
     }
 
     this.eventEmitter = new EventEmitter2();
-    this._middleware = [];
+    this._plugins = [];
   }
 
   _getDefaults() {
     return _defaults;
   }
 
-  _callMiddlewareMethod(method, mutableArgIdx, earlyExit, ...args) {
+  _callPluginMethod(method, mutableArgIdx, earlyExit, ...args) {
     let i = 0;
 
     const shouldContinue = () => (earlyExit ? args[mutableArgIdx] : true);
 
-    while (i < this._middleware.length && shouldContinue()) {
-      if (this._middleware[i][method]) {
-        args[mutableArgIdx] = this._middleware[i][method](...args);
+    while (i < this._plugins.length && shouldContinue()) {
+      if (this._plugins[i][method]) {
+        args[mutableArgIdx] = this._plugins[i][method](...args);
       }
       i += 1;
     }
@@ -44,19 +44,19 @@ export default class Client {
   }
 
   _callOnStarts(request) {
-    return this._callMiddlewareMethod('onStart', 0, true, request);
+    return this._callPluginMethod('onStart', 0, true, request);
   }
 
   _callOnSuccesses(request, response) {
-    return this._callMiddlewareMethod('onSuccess', 1, false, request, response);
+    return this._callPluginMethod('onSuccess', 1, false, request, response);
   }
 
   _callOnFails(request, response) {
-    return this._callMiddlewareMethod('onFail', 1, false, request, response);
+    return this._callPluginMethod('onFail', 1, false, request, response);
   }
 
   _callOnErrors(request, response) {
-    return this._callMiddlewareMethod('onError', 1, false, request, response);
+    return this._callPluginMethod('onError', 1, false, request, response);
   }
   _addHelpers(helpers) {
     if (helpers) {
@@ -67,19 +67,25 @@ export default class Client {
   }
 
   fetch(path, options) {
-    let fullPath = path;
-    if (this.defaults && this.defaults.url) {
-      fullPath = `${this.defaults.url}${this.defaults.sep}${path}`;
-    }
-
-    let request = new Request(fullPath, options);
-    this.eventEmitter.emit(events.REQUEST_START, request);
-
+    let request;
     let onStartError;
-    try {
-      request = this._callOnStarts(request);
-    } catch (err) {
-      onStartError = err;
+
+    if (path instanceof Request) {
+      request = path;
+    } else {
+      let fullPath = path;
+      if (this.defaults && this.defaults.url) {
+        fullPath = `${this.defaults.url}${this.defaults.sep}${path}`;
+      }
+
+      request = new Request(fullPath, options);
+      this.eventEmitter.emit(events.REQUEST_START, request);
+
+      try {
+        request = this._callOnStarts(request);
+      } catch (err) {
+        onStartError = err;
+      }
     }
 
     let fetchPromise;
@@ -103,24 +109,24 @@ export default class Client {
           throw mutatedError;
         });
     } else {
-      const err = onStartError || new MiddlewareError();
+      const err = onStartError || new PluginError();
       fetchPromise = Promise.reject(err);
     }
 
     return fetchPromise;
   }
 
-  addMiddleware(middleware) {
-    middleware.client = this;
-    this._middleware.push(middleware);
-    this._addHelpers(middleware.helpers);
+  addPlugin(plugin) {
+    plugin.client = this;
+    this._plugins.push(plugin);
+    this._addHelpers(plugin.helpers);
   }
 
-  removeMiddleware(name) {
+  removePlugin(name) {
     let i = 0;
-    for (i; i < this._middleware.length; i++) {
-      if (this._middleware[i].name === name) {
-        this._middleware.splice(i, 1);
+    for (i; i < this._plugins.length; i++) {
+      if (this._plugins[i].name === name) {
+        this._plugins.splice(i, 1);
         i -= 1;
       }
     }
@@ -239,33 +245,41 @@ export default class Client {
     return _options;
   }
 
-  get(path, options) {
+  get(path, body, options) {
     const _options = options || {};
-    _options.method = 'get';
-    return this.fetch(path, _options);
+    let queryString = '';
+
+    if (body && Object.keys(body).length) {
+      const urlSearchParams = new URLSearchParams();
+      this._encodeForm(body, urlSearchParams);
+      queryString = `?${urlSearchParams.toString()}`;
+    }
+
+    _options.method = 'GET';
+    return this.fetch(path + queryString, _options);
   }
 
   post(path, body, options) {
     const _options = this._buildOptionsWithBody('post', body, options);
-    _options.method = 'post';
+    _options.method = 'POST';
     return this.fetch(path, _options);
   }
 
   put(path, body, options) {
     const _options = this._buildOptionsWithBody('put', body, options);
-    _options.method = 'put';
+    _options.method = 'PUT';
     return this.fetch(path, _options);
   }
 
   patch(path, body, options) {
     const _options = this._buildOptionsWithBody('patch', body, options);
-    _options.method = 'patch';
+    _options.method = 'PATCH';
     return this.fetch(path, _options);
   }
 
   delete(path, options) {
     const _options = options || {};
-    _options.method = 'delete';
+    _options.method = 'DELETE';
     return this.fetch(path, _options);
   }
 }

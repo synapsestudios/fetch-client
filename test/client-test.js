@@ -9,7 +9,7 @@ chai.use(chaiAsPromised);
 chai.use(sinonChai);
 
 import Client from '../src/client';
-import MiddlewareError from '../src/middleware-error';
+import PluginError from '../src/plugin-error';
 
 import EventEmitter2 from 'eventemitter2';
 import * as events from '../src/events';
@@ -21,6 +21,15 @@ GLOBAL.Request = Request;
 describe('client', () => {
   it('should not fail to instantiate', () => {
     const myClient = new Client({ arbitrary: 'object' });
+  });
+
+  it('handles Request object in fetch call', () => {
+    const myClient = new Client({});
+    GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+
+    const request = new Request();
+    myClient.fetch(request);
+    expect(GLOBAL.fetch).to.be.calledWith(request);
   });
 
   describe('events', () => {
@@ -100,36 +109,36 @@ describe('client', () => {
     });
   });
 
-  describe('middleware', () => {
-    describe('basic middleware functionality', () => {
+  describe('plugin', () => {
+    describe('basic plugin functionality', () => {
       it('can be added', () => {
         const myClient = new Client();
-        const myMiddleware = { foo: 'foo' };
+        const myPlugin = { foo: 'foo' };
 
-        myClient.addMiddleware(myMiddleware);
-        expect(myClient._middleware).to.deep.equal([myMiddleware]);
+        myClient.addPlugin(myPlugin);
+        expect(myClient._plugins).to.deep.equal([myPlugin]);
 
-        const mySecondMiddleware = { bar: 'bar' };
-        myClient.addMiddleware(mySecondMiddleware);
-        expect(myClient._middleware).to.deep.equal([myMiddleware, mySecondMiddleware]);
+        const mySecondPlugin = { bar: 'bar' };
+        myClient.addPlugin(mySecondPlugin);
+        expect(myClient._plugins).to.deep.equal([myPlugin, mySecondPlugin]);
       });
 
       it('can be removed', () => {
         const myClient = new Client();
-        const myMiddleware = { foo: 'foo', name: 'myMiddleware' };
-        const mySecondMiddleware = { bar: 'bar', name: 'mySecondMiddleware' };
-        const myThirdMiddleware = { baz: 'baz', name: 'myThirdMiddleware' };
+        const myPlugin = { foo: 'foo', name: 'myPlugin' };
+        const mySecondPlugin = { bar: 'bar', name: 'mySecondPlugin' };
+        const myThirdPlugin = { baz: 'baz', name: 'myThirdPlugin' };
 
-        myClient.addMiddleware(myMiddleware);
-        myClient.addMiddleware(mySecondMiddleware);
+        myClient.addPlugin(myPlugin);
+        myClient.addPlugin(mySecondPlugin);
 
         // add a clone of the second one and make sure it's removed
-        myClient.addMiddleware({ ...mySecondMiddleware });
-        myClient.addMiddleware(myThirdMiddleware);
+        myClient.addPlugin({ ...mySecondPlugin });
+        myClient.addPlugin(myThirdPlugin);
 
-        myClient.removeMiddleware('mySecondMiddleware');
+        myClient.removePlugin('mySecondPlugin');
 
-        expect(myClient._middleware).to.deep.equal([myMiddleware, myThirdMiddleware]);
+        expect(myClient._plugins).to.deep.equal([myPlugin, myThirdPlugin]);
       });
 
       it('can emit custom events', () => {
@@ -138,15 +147,15 @@ describe('client', () => {
         const cb = sinon.spy();
         myClient.on('custom_event', cb);
 
-        class MyMiddleware {
+        class MyPlugin {
           onStart(request) {
             this.client.eventEmitter.emit('custom_event');
             return request;
           }
         }
 
-        const myMiddleware = new MyMiddleware();
-        myClient.addMiddleware(myMiddleware);
+        const myPlugin = new MyPlugin();
+        myClient.addPlugin(myPlugin);
 
         myClient.fetch('http://whatever.com');
         expect(cb).to.have.been.calledOnce;
@@ -157,7 +166,7 @@ describe('client', () => {
         const myClient = new Client();
         const newMethod = sinon.spy();
 
-        myClient.addMiddleware({
+        myClient.addPlugin({
           helpers: {
             newMethod,
           },
@@ -172,9 +181,9 @@ describe('client', () => {
         GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
         const myClient = new Client();
         const onStart = sinon.spy((request) => request);
-        const myMiddleware = { onStart };
+        const myPlugin = { onStart };
 
-        myClient.addMiddleware(myMiddleware);
+        myClient.addPlugin(myPlugin);
 
         return myClient.fetch().then(() => {
           expect(onStart).to.have.been.calledOnce;
@@ -184,8 +193,8 @@ describe('client', () => {
       it('doesn\'t break when onStart is left out', () => {
         GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
         const myClient = new Client();
-        const myMiddleware = { arbitrary: 'object' };
-        myClient.addMiddleware(myMiddleware);
+        const myPlugin = { arbitrary: 'object' };
+        myClient.addPlugin(myPlugin);
 
         const promise = myClient.fetch();
         return expect(promise).to.be.fulfilled;
@@ -197,8 +206,8 @@ describe('client', () => {
         const onStart2 = sinon.spy((request) => request);
 
         const myClient = new Client();
-        myClient.addMiddleware({ onStart: onStart1 });
-        myClient.addMiddleware({ onStart: onStart2 });
+        myClient.addPlugin({ onStart: onStart1 });
+        myClient.addPlugin({ onStart: onStart2 });
 
         myClient.fetch();
         expect(onStart2).to.have.been.calledWith('test');
@@ -210,8 +219,8 @@ describe('client', () => {
 
         const onStart1 = sinon.spy(false);
         const onStart2 = sinon.spy();
-        myClient.addMiddleware({ onStart: onStart1 });
-        myClient.addMiddleware({ onStart: onStart2 });
+        myClient.addPlugin({ onStart: onStart1 });
+        myClient.addPlugin({ onStart: onStart2 });
 
         return myClient.fetch().catch(err => {
           expect(onStart1).to.have.been.calledOnce;
@@ -222,7 +231,7 @@ describe('client', () => {
       it('cancels the request when onStart returns false', () => {
         GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
         const myClient = new Client();
-        myClient.addMiddleware({ onStart: () => false });
+        myClient.addPlugin({ onStart: () => false });
 
         const promise = myClient.fetch();
         expect(GLOBAL.fetch).to.not.be.called;
@@ -232,9 +241,9 @@ describe('client', () => {
       it('cancels the request when onStart throws an error', () => {
         GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
         const myClient = new Client();
-        myClient.addMiddleware({
+        myClient.addPlugin({
           onStart: () => {
-            throw new MiddlewareError();
+            throw new PluginError();
           },
         });
 
@@ -246,26 +255,26 @@ describe('client', () => {
       it('rejects with a custom error object', () => {
         GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
         const myClient = new Client();
-        myClient.addMiddleware({ onStart: () => false });
+        myClient.addPlugin({ onStart: () => false });
 
         const promise = myClient.fetch();
         expect(GLOBAL.fetch).to.not.be.called;
         return expect(promise).to.be.rejected
           .then(err => {
-            expect(err.name).to.equal('MiddlewareError');
+            expect(err.name).to.equal('PluginError');
           });
       });
 
-      it('calls multiple middleware in the order they were added', () => {
+      it('calls multiple plugin in the order they were added', () => {
         GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
         const onStart1 = sinon.spy((request) => request);
         const onStart2 = sinon.spy((request) => request);
         const onStart3 = sinon.spy((request) => request);
 
         const myClient = new Client();
-        myClient.addMiddleware({ onStart: onStart1 });
-        myClient.addMiddleware({ onStart: onStart2 });
-        myClient.addMiddleware({ onStart: onStart3 });
+        myClient.addPlugin({ onStart: onStart1 });
+        myClient.addPlugin({ onStart: onStart2 });
+        myClient.addPlugin({ onStart: onStart3 });
 
         myClient.fetch();
         expect(onStart1).to.be.calledBefore(onStart2);
@@ -277,39 +286,39 @@ describe('client', () => {
       it('calls onSuccess when a request succeeds', () => {
         GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
         const myClient = new Client();
-        const myMiddleware = { onSuccess: sinon.spy() };
-        myClient.addMiddleware(myMiddleware);
+        const myPlugin = { onSuccess: sinon.spy() };
+        myClient.addPlugin(myPlugin);
 
         return myClient.fetch().then(() => {
-          expect(myMiddleware.onSuccess).to.have.been.calledOnce;
+          expect(myPlugin.onSuccess).to.have.been.calledOnce;
         });
       });
 
       it('passes request and response to onSuccess', () => {
         GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
         const myClient = new Client();
-        const myMiddleware = { onSuccess: sinon.spy() };
-        myClient.addMiddleware(myMiddleware);
+        const myPlugin = { onSuccess: sinon.spy() };
+        myClient.addPlugin(myPlugin);
 
         return myClient.fetch().then(() => {
-          expect(myMiddleware.onSuccess.args[0][0]).to.be.instanceof(Request);
-          expect(myMiddleware.onSuccess.args[0][1]).to.equal('test');
+          expect(myPlugin.onSuccess.args[0][0]).to.be.instanceof(Request);
+          expect(myPlugin.onSuccess.args[0][1]).to.equal('test');
         });
       });
 
       it('does not call onSuccess when a request fails', () => {
         GLOBAL.fetch = sinon.spy(() => Promise.reject('test'));
         const myClient = new Client();
-        const myMiddleware = { onSuccess: sinon.spy(), onFail: sinon.spy() };
-        myClient.addMiddleware(myMiddleware);
+        const myPlugin = { onSuccess: sinon.spy(), onFail: sinon.spy() };
+        myClient.addPlugin(myPlugin);
 
         return myClient.fetch().catch((err) => {
-          expect(myMiddleware.onSuccess).to.have.callCount(0);
+          expect(myPlugin.onSuccess).to.have.callCount(0);
         });
       });
     });
 
-    const middlewares = ['onError', 'onFail'];
+    const plugins = ['onError', 'onFail'];
 
     const responses = [
       Promise.resolve('test'),
@@ -317,44 +326,44 @@ describe('client', () => {
     ];
 
     let i;
-    for (i = 0; i < middlewares.length; i += 1) {
-      const method = middlewares[i];
+    for (i = 0; i < plugins.length; i += 1) {
+      const method = plugins[i];
       const response = responses[i];
       describe(`${method} functionality`, () => {
         it(`calls ${method} when a request fails`, () => {
           GLOBAL.fetch = sinon.spy(() => response);
           const myClient = new Client();
-          const myMiddleware = {};
-          myMiddleware[method] = sinon.spy();
-          myClient.addMiddleware(myMiddleware);
+          const myPlugin = {};
+          myPlugin[method] = sinon.spy();
+          myClient.addPlugin(myPlugin);
 
           return myClient.fetch().catch(() => {
-            expect(myMiddleware[method]).to.have.been.calledOnce;
+            expect(myPlugin[method]).to.have.been.calledOnce;
           });
         });
 
-        it(`passes request and error to ${middlewares[i]}`, () => {
+        it(`passes request and error to ${plugins[i]}`, () => {
           GLOBAL.fetch = sinon.spy(() => response);
           const myClient = new Client();
-          const myMiddleware = {};
-          myMiddleware[method] = sinon.spy();
-          myClient.addMiddleware(myMiddleware);
+          const myPlugin = {};
+          myPlugin[method] = sinon.spy();
+          myClient.addPlugin(myPlugin);
 
           return myClient.fetch().catch(() => {
-            expect(myMiddleware[method].args[0][0]).to.be.instanceof(Request);
-            expect(myMiddleware[method].args[0][1]).to.equal('test');
+            expect(myPlugin[method].args[0][0]).to.be.instanceof(Request);
+            expect(myPlugin[method].args[0][1]).to.equal('test');
           });
         });
 
-        it(`does not call ${middlewares[i]} when a request succeeds`, () => {
+        it(`does not call ${plugins[i]} when a request succeeds`, () => {
           GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
           const myClient = new Client();
-          const myMiddleware = { onSuccess: sinon.spy() };
-          myMiddleware[method] = sinon.spy();
-          myClient.addMiddleware(myMiddleware);
+          const myPlugin = { onSuccess: sinon.spy() };
+          myPlugin[method] = sinon.spy();
+          myClient.addPlugin(myPlugin);
 
           return myClient.fetch().then(() => {
-            expect(myMiddleware[method]).to.have.callCount(0);
+            expect(myPlugin[method]).to.have.callCount(0);
           });
         });
       });
