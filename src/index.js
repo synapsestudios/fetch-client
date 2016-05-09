@@ -1,6 +1,6 @@
 import Client from './client';
-import ResumableUploader from './resumable-uploader';
+import resumableUploaderPlugin from './plugins/resumable-uploader';
 
-export { ResumableUploader };
+export { resumableUploaderPlugin };
 
 export default Client;
