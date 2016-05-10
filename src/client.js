@@ -14,7 +14,7 @@ export default class Client {
       throw new Error(`${defaults.encoding} is not an allowed encoding value.`);
     }
 
-    this.defaults = merge.recursive(true, _defaults, defaults);
+    this.defaults = merge.recursive(true, this._getDefaults(), defaults);
 
     if (this.defaults.url) {
       this.defaults.sep = this.defaults.url[this.defaults.url.length - 1] === '/' ? '' : '/';
@@ -22,6 +22,10 @@ export default class Client {
 
     this.eventEmitter = new EventEmitter2();
     this._plugins = [];
+  }
+
+  _getDefaults() {
+    return _defaults;
   }
 
   _callPluginMethod(method, mutableArgIdx, earlyExit, ...args) {
@@ -91,7 +95,7 @@ export default class Client {
           let mutatedResponse;
           if (response.status >= 400) {
             mutatedResponse = this._callOnFails(request, response);
-            this.eventEmitter.emit(events.REQUEST_FAIL, request, mutatedResponse);
+            this.eventEmitter.emit(events.REQUEST_FAILURE, request, mutatedResponse);
           } else {
             mutatedResponse = this._callOnSuccesses(request, response);
             this.eventEmitter.emit(events.REQUEST_SUCCESS, request, mutatedResponse);

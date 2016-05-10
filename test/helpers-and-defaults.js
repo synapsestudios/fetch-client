@@ -8,7 +8,7 @@ import sinonChai from 'sinon-chai';
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
 
-import Client from '../lib/client';
+import Client from '../src/client';
 import FormObjectMock from './form-object-mock';
 
 // polyfills

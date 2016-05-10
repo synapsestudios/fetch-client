@@ -8,11 +8,11 @@ import sinonChai from 'sinon-chai';
 chai.use(chaiAsPromised);
 chai.use(sinonChai);
 
-import Client from '../lib/client';
-import PluginError from '../lib/plugin-error';
+import Client from '../src/client';
+import PluginError from '../src/plugin-error';
 
 import EventEmitter2 from 'eventemitter2';
-import * as events from '../lib/events';
+import * as events from '../src/events';
 
 // polyfills
 import { Request, Response } from 'whatwg-fetch';
@@ -72,7 +72,7 @@ describe('client', () => {
 
       const myClient = new Client();
       const cb = sinon.spy();
-      myClient.on(events.REQUEST_FAIL, cb);
+      myClient.on(events.REQUEST_FAILURE, cb);
 
       const promise = myClient.fetch('http://google.com/', { method: 'get' });
 
