@@ -58,6 +58,7 @@ export default class Client {
   _callOnErrors(request, response) {
     return this._callPluginMethod('onError', 1, false, request, response);
   }
+
   _addHelpers(helpers) {
     if (helpers) {
       Object.keys(helpers).forEach((key) => {
@@ -120,6 +121,9 @@ export default class Client {
     plugin.client = this;
     this._plugins.push(plugin);
     this._addHelpers(plugin.helpers);
+    if (plugin.onAddPlugin) {
+      plugin.onAddPlugin.call(this);
+    }
   }
 
   removePlugin(name) {
