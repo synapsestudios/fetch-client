@@ -1,6 +1,6 @@
-import localStorage from 'store2';
-
-let getJwtToken = () => (localStorage.get('token') || {}).token;
+let getJwtToken = function getJwtToken() {
+  throw new Error('You must define getJwtToken with client.helpers.setJwtTokenGetter');
+};
 
 export default {
   onStart(request) {
@@ -9,7 +9,7 @@ export default {
   },
 
   helpers: {
-    setCustomGetJwtTokenFunc: func => {
+    setJwtTokenGetter: func => {
       getJwtToken = func;
     },
 
