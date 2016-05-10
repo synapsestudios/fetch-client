@@ -2,12 +2,10 @@ import Resumable from 'resumablejs';
 import * as events from '../events';
 
 export default {
-  onAddPlugin: () => {
-    this.defaults.headers = {
-      post: {
-        method: 'post',
-        headers: {},
-      },
+  onAddPlugin() {
+    this.defaults.post = {
+      method: 'post',
+      headers: {},
     };
   },
 
@@ -17,7 +15,7 @@ export default {
       const options = Object.assign(
         {},
         {
-          headers: this.defaults.headers,
+          headers: this.defaults.post.headers,
           target: `${this.defaults.url}${path}`,
           method: 'multipart',
           query: {},
@@ -28,6 +26,13 @@ export default {
         },
         _options
       );
+
+      // Add any headers set by plugins
+      let request = this._getRequest(path, { headers: options.headers });
+      request = this._callOnStarts(request);
+      for (const pair of request.headers.entries()) {
+        options.headers[pair[0]] = pair[1];
+      }
 
       const resumable = new Resumable(options);
 
