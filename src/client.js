@@ -84,10 +84,10 @@ export default class Client {
       request = path;
     } else {
       try {
-        request = this._callOnStarts(request);
-      } catch (err) {
         request = this._getRequest(path, options);
+        request = this._callOnStarts(request);
         this.eventEmitter.emit(events.REQUEST_START, request);
+      } catch (err) {
         onStartError = err;
       }
     }
