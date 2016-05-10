@@ -67,6 +67,15 @@ export default class Client {
     }
   }
 
+  _getRequest(path, options) {
+    let fullPath = path;
+    if (this.defaults && this.defaults.url) {
+      fullPath = `${this.defaults.url}${this.defaults.sep}${path}`;
+    }
+
+    return new Request(fullPath, options);
+  }
+
   fetch(path, options) {
     let request;
     let onStartError;
@@ -74,17 +83,11 @@ export default class Client {
     if (path instanceof Request) {
       request = path;
     } else {
-      let fullPath = path;
-      if (this.defaults && this.defaults.url) {
-        fullPath = `${this.defaults.url}${this.defaults.sep}${path}`;
-      }
-
-      request = new Request(fullPath, options);
-      this.eventEmitter.emit(events.REQUEST_START, request);
-
       try {
         request = this._callOnStarts(request);
       } catch (err) {
+        request = this._getRequest(path, options);
+        this.eventEmitter.emit(events.REQUEST_START, request);
         onStartError = err;
       }
     }
