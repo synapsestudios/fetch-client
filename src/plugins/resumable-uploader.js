@@ -2,13 +2,22 @@ import Resumable from 'resumablejs';
 import * as events from '../events';
 
 export default {
+  onAddPlugin: () => {
+    this.defaults.headers = {
+      post: {
+        method: 'post',
+        headers: {},
+      },
+    };
+  },
+
   helpers: {
     upload(path, fileToUpload, _options = {}) {
       // Set defaults
       const options = Object.assign(
         {},
         {
-          headers: {},
+          headers: this.defaults.headers,
           target: `${this.defaults.url}${path}`,
           method: 'multipart',
           query: {},
