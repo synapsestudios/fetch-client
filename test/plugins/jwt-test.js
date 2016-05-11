@@ -15,7 +15,6 @@ import { AUTH_EXPIRED, AUTH_FAILED } from '../../src/events';
 
 // polyfills
 import { Request, Response } from 'whatwg-fetch';
-GLOBAL.Request = Request;
 GLOBAL.btoa = (str) => new Buffer(str, 'binary').toString('base64');
 GLOBAL.atob = (str) => new Buffer(str, 'base64').toString('binary');
 
