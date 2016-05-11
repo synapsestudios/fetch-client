@@ -58,12 +58,22 @@ export default class Client {
   _callOnErrors(request, response) {
     return this._callPluginMethod('onError', 1, false, request, response);
   }
+
   _addHelpers(helpers) {
     if (helpers) {
       Object.keys(helpers).forEach((key) => {
         this[key] = helpers[key];
       });
     }
+  }
+
+  _getRequest(path, options) {
+    let fullPath = path;
+    if (this.defaults && this.defaults.url) {
+      fullPath = `${this.defaults.url}${this.defaults.sep}${path}`;
+    }
+
+    return new Request(fullPath, options);
   }
 
   fetch(path, options) {
@@ -73,19 +83,14 @@ export default class Client {
     if (path instanceof Request) {
       request = path;
     } else {
-      let fullPath = path;
-      if (this.defaults && this.defaults.url) {
-        fullPath = `${this.defaults.url}${this.defaults.sep}${path}`;
-      }
+      request = this._getRequest(path, options);
+    }
 
-      request = new Request(fullPath, options);
-      this.eventEmitter.emit(events.REQUEST_START, request);
-
-      try {
-        request = this._callOnStarts(request);
-      } catch (err) {
-        onStartError = err;
-      }
+    this.eventEmitter.emit(events.REQUEST_START, request);
+    try {
+      request = this._callOnStarts(request);
+    } catch (err) {
+      onStartError = err;
     }
 
     let fetchPromise;
@@ -120,6 +125,9 @@ export default class Client {
     plugin.client = this;
     this._plugins.push(plugin);
     this._addHelpers(plugin.helpers);
+    if (plugin.onAddPlugin) {
+      plugin.onAddPlugin(this);
+    }
   }
 
   removePlugin(name) {

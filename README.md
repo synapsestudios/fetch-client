@@ -129,6 +129,24 @@ Plugin methods correspond to events and fire under the same conditions with the 
 | onFail      | Fires when a request returns an http status >= 400          | Request, Response |
 | onError     | Fires when a request errors out. Server timeouts, etc       | Request, err      |
 
+#### Available Plugins
+
+This library includes some built-in plugins:
+
+##### JWT
+
+The JWT plugin sets the JSON web token in the request's Authorization header and emits
+AUTH_EXPIRED or AUTH_FAILED events on 401 responses.
+
+```
+import { jwtPlugin } from 'synapi-client';
+import store2 from 'store2';
+
+myClient.addPlugin(jwtPlugin);
+myClient.setJwtTokenGetter(() => (store2.get('token').token || {}).token);
+myClient.post('endpoint-that-requires-auth');
+```
+
 #### Aborting the request with onStart()
 If your plugin's `onStart` method returns false or throws an error then the request will be aborted and the promise will be rejected.
 
