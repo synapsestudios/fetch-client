@@ -83,13 +83,14 @@ export default class Client {
     if (path instanceof Request) {
       request = path;
     } else {
-      try {
-        request = this._getRequest(path, options);
-        request = this._callOnStarts(request);
-        this.eventEmitter.emit(events.REQUEST_START, request);
-      } catch (err) {
-        onStartError = err;
-      }
+      request = this._getRequest(path, options);
+    }
+
+    this.eventEmitter.emit(events.REQUEST_START, request);
+    try {
+      request = this._callOnStarts(request);
+    } catch (err) {
+      onStartError = err;
     }
 
     let fetchPromise;
