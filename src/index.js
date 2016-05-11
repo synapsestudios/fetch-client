@@ -1,6 +1,6 @@
 import Client from './client';
-import jwtPlugin from './plugins/jwt';
 import jsonPlugin from './plugins/json';
+import jwtPlugin from './plugins/jwt';
 
 export { jsonPlugin, jwtPlugin };
 
