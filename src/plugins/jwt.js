@@ -1,9 +1,5 @@
 import { AUTH_EXPIRED, AUTH_FAILED } from '../events';
 
-let getJwtToken = function getJwtToken() {
-  throw new Error('You must define getJwtToken with client.helpers.setJwtTokenGetter');
-};
-
 const isExpired = (token) => {
   const tokenPayload = token.substring(
       token.indexOf('.') + 1,
@@ -36,9 +32,13 @@ export default {
 
   helpers: {
     setJwtTokenGetter: func => {
-      getJwtToken = func;
+      this.helpers.getJwtToken = func;
     },
 
-    getJwtToken,
+    getJwtToken() {
+      throw new Error(
+        'You must define getJwtToken with client.helpers.setJwtTokenGetter'
+      );
+    },
   },
 };
