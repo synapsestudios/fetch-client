@@ -126,7 +126,7 @@ export default class Client {
     this._plugins.push(plugin);
     this._addHelpers(plugin.helpers);
     if (plugin.onAddPlugin) {
-      plugin.onAddPlugin.call(this);
+      plugin.onAddPlugin(this);
     }
   }
 
