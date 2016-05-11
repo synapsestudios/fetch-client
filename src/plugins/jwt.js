@@ -16,23 +16,23 @@ const isExpired = (token) => {
 
 export default {
   onStart(request) {
-    request.headers.append('Authorization', this.helpers.getJwtToken());
+    request.headers.append('Authorization', this.client.getJwtToken());
     return request;
   },
 
   onFail(request, response) {
     if (response.status === 401) {
-      if (isExpired(this.helpers.getJwtToken())) {
-        this.eventEmitter.emit(AUTH_EXPIRED);
+      if (isExpired(this.client.getJwtToken())) {
+        this.client.eventEmitter.emit(AUTH_EXPIRED, request, response);
       } else {
-        this.eventEmitter.emit(AUTH_FAILED);
+        this.client.eventEmitter.emit(AUTH_FAILED, request, response);
       }
     }
   },
 
   helpers: {
-    setJwtTokenGetter: func => {
-      this.helpers.getJwtToken = func;
+    setJwtTokenGetter(func) {
+      this.getJwtToken = func;
     },
 
     getJwtToken() {
