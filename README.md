@@ -147,6 +147,22 @@ myClient.setJwtTokenGetter(() => (store2.get('token').token || {}).token);
 myClient.post('endpoint-that-requires-auth');
 ```
 
+##### JSON
+
+The JSON plugin adds a parsedBody method to the response object that calls
+Response.json() if the Content-Type is application/json, and Response.text() otherwise.
+
+```
+import { jsonPlugin } from 'synapi-client';
+
+myClient.addPlugin(jsonPlugin);
+myClient.post('endpoint').then(response => {
+  response.parsedContent().then(content => {
+
+  });
+});
+```
+
 #### Aborting the request with onStart()
 If your plugin's `onStart` method returns false or throws an error then the request will be aborted and the promise will be rejected.
 
