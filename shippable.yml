@@ -1,0 +1,18 @@
+language: node_js
+build_image: shippableimages/ubuntu1204_nodejs
+node_js:
+  - "6.0.0"
+env:
+  - XUNIT_FILE=shippable/testresults/result.xml
+before_install:
+install:
+  - npm install
+before_script:
+  - mkdir -p shippable/build
+  - mkdir -p shippable/testresults
+script:
+  - npm lint
+  - npm test:shippable
+notifications:
+  email: false
+cache: true
