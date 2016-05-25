@@ -11,8 +11,8 @@ before_script:
   - mkdir -p shippable/build
   - mkdir -p shippable/testresults
 script:
-  - npm lint
-  - npm test:shippable
+  - npm run lint
+  - npm run test:shippable
 notifications:
   email: false
 cache: true
