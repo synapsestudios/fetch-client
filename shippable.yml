@@ -4,6 +4,7 @@ node_js:
   - "6.0.0"
 env:
 before_install:
+  - node --version
 install:
   - npm install
 before_script:
