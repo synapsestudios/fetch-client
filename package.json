@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "npm run clean && BABEL_ENV=testing mocha --recursive --compilers js:babel-register",
-    "test:shippable": "npm run test -- -R xunit ./test > shippable/testresults/result.xml",
+    "test:shippable": "npm run test -- -R xunit > shippable/testresults/result.xml",
     "test:watch": "npm run test -- --watch",
     "clean": "rm -rf lib",
     "build": "npm run clean && babel src --out-dir lib",
