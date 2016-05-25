@@ -3,7 +3,6 @@ build_image: shippableimages/ubuntu1204_nodejs
 node_js:
   - "6.0.0"
 env:
-  - XUNIT_FILE=shippable/testresults/result.xml
 before_install:
 install:
   - npm install
