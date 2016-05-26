@@ -1,5 +1,7 @@
 # synapi-client
 
+![shippable-badge](https://api.shippable.com/projects/5745e8ba2a8192902e216482/badge?branch=master)
+
 Wrapper for fetch that adds shortcuts, plugins and events. This is written and maintained by the fine folks at [Synapse Studios](http://www.synapsestudios.com). Our goal is to maintain the fetch api while adding in sensible defaults and hooks to request lifecycle events.
 
 This library is inspired by libraries like [Fetch+](https://github.com/RickWong/fetch-plus) and [http-client](https://github.com/mjackson/http-client). There are differences in the details of how our plugins and events work.
