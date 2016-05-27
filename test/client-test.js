@@ -29,7 +29,9 @@ describe('client', () => {
 
     const request = new Request();
     myClient.fetch(request);
-    expect(GLOBAL.fetch).to.be.calledWith(request);
+    return expect(request.waitPromise).to.be.fulfilled.then(() => {
+      expect(GLOBAL.fetch).to.be.calledWith(request);
+    });
   });
 
   describe('events', () => {
@@ -201,8 +203,9 @@ describe('client', () => {
       });
 
       it('calls onStart with the previous onStart return value', () => {
+        const onStart1ReturnValue = { test: 'test' };
         GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
-        const onStart1 = sinon.spy((request) => 'test');
+        const onStart1 = sinon.spy((request) => onStart1ReturnValue);
         const onStart2 = sinon.spy((request) => request);
 
         const myClient = new Client();
@@ -210,7 +213,7 @@ describe('client', () => {
         myClient.addPlugin({ onStart: onStart2 });
 
         myClient.fetch();
-        expect(onStart2).to.have.been.calledWith('test');
+        expect(onStart2).to.have.been.calledWith(onStart1ReturnValue);
       });
 
       it('stops calling onStarts when false returned', () => {
