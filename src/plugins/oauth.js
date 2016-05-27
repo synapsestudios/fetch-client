@@ -17,16 +17,35 @@ export default {
   onComplete(request, response) {
     if (response.status === 401) {
       this.refreshing = true;
-      this.retryAfterRefresh.push(request);
       response.doOver = this.client.refreshToken().then(() => {
+        this.refreshing = false;
         this.client.eventEmitter.emit(TOKEN_REFRESHED);
       });
     }
+    return response;
   },
 
   helpers: {
-    setConfig(config) {
+    setConfig(config = {}) {
       this.oauthConfig = config;
+    },
+
+    login(credentials) {
+      const body = Object.assign(
+        {
+          grant_type: 'password',
+          client_id: this.client.oauthConfig.client_id,
+          client_secret: this.client.oauthConfig.client_secret,
+        },
+        credentials
+      );
+      return this.client.fetch(this.client.oauthConfig.token_path, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: qs.stringify(body),
+      });
     },
 
     refreshToken() {
