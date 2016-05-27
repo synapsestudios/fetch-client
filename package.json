@@ -51,6 +51,7 @@
   },
   "dependencies": {
     "eventemitter2": "^1.0.0",
-    "merge": "^1.2.0"
+    "merge": "^1.2.0",
+    "querystring": "^0.2.0"
   }
 }

@@ -1,3 +1,4 @@
+import qs from 'querystring';
 const TOKEN_REFRESHED = 'TOKEN_REFRESHED';
 
 export default {
@@ -34,7 +35,11 @@ export default {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: `grant_type=refresh_token&refresh_token=${this.client.getRefreshToken()}`,
+        body: qs.stringify({
+          grant_type: 'refresh_token',
+          refresh_token: this.client.getRefreshToken(),
+          client_id: this.client.oauthConfig.client_id,
+        }),
       });
     },
 
