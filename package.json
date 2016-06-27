@@ -1,6 +1,6 @@
 {
-  "name": "synapi-client",
-  "version": "0.2.1",
+  "name": "@synapsestudios/fetch-client",
+  "version": "0.2.2",
   "description": "A wrapper for fetch to make things more easier",
   "main": "lib/index.js",
   "directories": {
@@ -18,14 +18,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/synapsestudios/synapi-client.git"
+    "url": "git+https://github.com/synapsestudios/fetch-client.git"
   },
   "author": "Synapse Studios",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/synapsestudios/synapi-client/issues"
+    "url": "https://github.com/synapsestudios/fetch-client/issues"
   },
-  "homepage": "https://github.com/synapsestudios/synapi-client#readme",
+  "homepage": "https://github.com/synapsestudios/fetch-client#readme",
   "devDependencies": {
     "babel-cli": "^6.6.5",
     "babel-core": "^6.7.4",
