@@ -1,6 +1,6 @@
 {
   "name": "@synapsestudios/fetch-client",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "A wrapper for fetch to make things more easier",
   "main": "lib/index.js",
   "directories": {
@@ -14,7 +14,7 @@
     "build": "npm run clean && babel src --out-dir lib",
     "build:watch": "npm run build -- --watch",
     "lint": "eslint src",
-    "prepublish": "npm run lint && npm test"
+    "prepublish": "npm run lint && npm test && npm run build"
   },
   "repository": {
     "type": "git",
