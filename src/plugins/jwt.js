@@ -28,6 +28,7 @@ export default {
         this.client.eventEmitter.emit(AUTH_FAILED, request, response);
       }
     }
+    return response;
   },
 
   helpers: {
