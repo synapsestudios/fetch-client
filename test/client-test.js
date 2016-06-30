@@ -109,6 +109,19 @@ describe('client', () => {
     });
   });
 
+  describe('get', () => {
+    it('sets headers from defaults', () => {
+      const myClient = new Client({
+        get: { headers: { 'X-TEST': 'FOO' } },
+      });
+      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      myClient.get('path');
+
+      expect(GLOBAL.fetch).to.have.been.called;
+      expect(GLOBAL.fetch.args[0][0].headers.get('X-TEST')).to.equal('FOO');
+    });
+  });
+
   describe('plugin', () => {
     describe('basic plugin functionality', () => {
       it('can be added', () => {

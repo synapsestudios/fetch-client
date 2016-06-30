@@ -48,6 +48,20 @@ describe('jwt-plugin', () => {
     expect(request.headers.get('Authorization')).to.equal(token);
   });
 
+  it('resolves with response on failure', () => {
+    const response = new Response("{ body: 'content' }", { status: 401 });
+    GLOBAL.fetch = sinon.spy(() => Promise.resolve(response));
+    const token = getToken({ exp: 1 });
+    const request = new Request();
+    const client = new Client();
+    client.addPlugin(jwtPlugin);
+    client.setJwtTokenGetter(() => token);
+
+    return expect(client.post(request)).to.be.fulfilled.then(resolution => {
+      expect(resolution).to.equal(response);
+    });
+  });
+
   it('emits AUTH_EXPIRED event if request 401s and token is expired', () => {
     const response = new Response("{ body: 'content' }", { status: 401 });
     GLOBAL.fetch = sinon.spy(() => Promise.resolve(response));

@@ -2,6 +2,7 @@ import EventEmitter2 from 'eventemitter2';
 import * as events from './events';
 import PluginError from './plugin-error';
 import merge from 'merge';
+import get from 'lodash.get';
 import { defaults as _defaults, allowedEncodings } from './defaults';
 
 export default class Client {
@@ -256,6 +257,8 @@ export default class Client {
   get(path, body, options) {
     const _options = options || {};
     let queryString = '';
+
+    _options.headers = merge(true, get(this.defaults, 'get.headers'));
 
     if (body && Object.keys(body).length) {
       const urlSearchParams = new URLSearchParams();
