@@ -12,7 +12,7 @@ This library is inspired by libraries like [Fetch+](https://github.com/RickWong/
 npm install @synapsestudios/fetch-client --save
 ```
 
-Note: fetch-client assumes that fetch is available and _will not_ polyfill fetch for you.
+Note: fetch-client assumes that `fetch` and `URLSearchParams` are available and _will not_ polyfill them for you.
 
 ## Usage
 
