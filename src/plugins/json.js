@@ -1,6 +1,6 @@
 export default {
   onSuccess: (request, response) => {
-    response.parsedBody = function () {
+    response.parsedBody = () => {
       const contentType = response.headers.get('Content-Type') || '';
       if (contentType.match(/application\/json/)) {
         return response.json();
@@ -10,7 +10,7 @@ export default {
     return response;
   },
   onFail: (request, response) => {
-    response.parsedBody = function () {
+    response.parsedBody = () => {
       const contentType = response.headers.get('Content-Type') || '';
       if (contentType.match(/application\/json/)) {
         return response.json();
