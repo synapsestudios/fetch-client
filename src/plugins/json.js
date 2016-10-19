@@ -18,5 +18,5 @@ export default {
       return response.text();
     };
     return response;
-  }
+  },
 };
