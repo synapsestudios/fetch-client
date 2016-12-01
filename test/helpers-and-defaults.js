@@ -81,6 +81,24 @@ describe('helpers & defaults', () => {
       });
     });
 
+    it('uses bracket syntax for arrays in the query string if bracketStyleArrays is true', () => {
+      const myClient = new Client({ url: 'http://something.com', bracketStyleArrays: true });
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.get('test', { foo: ['bar', 'baz'] }).then(() => {
+        expect(myClient.fetch.args[0][0]).to.equal('test?foo%5B%5D=bar&foo%5B%5D=baz');
+      });
+    });
+
+    it('does not use brackets for arrays if bracketStyleArrays is false', () => {
+      const myClient = new Client({ url: 'http://something.com' });
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.get('test', { foo: ['bar', 'baz'] }).then(() => {
+        expect(myClient.fetch.args[0][0]).to.equal('test?foo=bar&foo=baz');
+      });
+    });
+
     it('calls fetch() handling empty body when calling get()', () => {
       const myClient = new Client({ url: 'http://something.com' });
       myClient.fetch = sinon.spy(() => Promise.resolve('test'));
