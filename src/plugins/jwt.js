@@ -5,7 +5,12 @@ const isExpired = (token) => {
       token.indexOf('.') + 1,
       token.indexOf('.', token.indexOf('.') + 1)
   );
-  const decodedPayload = JSON.parse(atob(tokenPayload));
+
+  try {
+    const decodedPayload = JSON.parse(atob(tokenPayload));
+  } catch (error) {
+    return true;
+  }
 
   if (decodedPayload.exp < (new Date().getTime() / 1000)) {
     return true;
