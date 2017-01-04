@@ -1,6 +1,10 @@
 import { AUTH_EXPIRED, AUTH_FAILED } from '../events';
 
 const isExpired = (token) => {
+  if (typeof token !== 'string') {
+    return false;
+  }
+
   const tokenPayload = token.substring(
       token.indexOf('.') + 1,
       token.indexOf('.', token.indexOf('.') + 1)
@@ -8,12 +12,12 @@ const isExpired = (token) => {
 
   try {
     const decodedPayload = JSON.parse(atob(tokenPayload));
-  } catch (error) {
-    return true;
-  }
 
-  if (decodedPayload.exp < (new Date().getTime() / 1000)) {
-    return true;
+    if (decodedPayload.exp < (new Date().getTime() / 1000)) {
+      return true;
+    }
+  } catch (error) {
+    console.trace(error);
   }
 
   return false;
