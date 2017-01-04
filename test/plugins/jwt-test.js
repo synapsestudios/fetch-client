@@ -125,10 +125,10 @@ describe('jwt-plugin', () => {
     });
   });
 
-  it('emits AUTH_FAILED event if request 401s and token is invalid', () => {
+  it('emits AUTH_FAILED event if request 401s and decoded token is invalid JSON', () => {
     const response = new Response("{ body: 'content' }", { status: 401 });
     GLOBAL.fetch = sinon.spy(() => Promise.resolve(response));
-    const token = '{}';
+    const token = 'foo';
     const request = new Request();
     const client = new Client();
     const failedSpy = sinon.spy();

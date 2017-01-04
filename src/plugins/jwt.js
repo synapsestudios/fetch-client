@@ -17,7 +17,7 @@ const isExpired = (token) => {
       return true;
     }
   } catch (error) {
-    // Swallow JSON or base64 decoding errors and emit auth failure event instead
+    // Swallow any JSON or base64 decoding errors
     return false;
   }
 
