@@ -104,6 +104,48 @@ describe('jwt-plugin', () => {
     });
   });
 
+  it('emits AUTH_FAILED event if request 401s and token is null', () => {
+    const response = new Response("{ body: 'content' }", { status: 401 });
+    GLOBAL.fetch = sinon.spy(() => Promise.resolve(response));
+    const token = null;
+    const request = new Request();
+    const client = new Client();
+    const failedSpy = sinon.spy();
+    const expiredSpy = sinon.spy();
+    client.on(AUTH_EXPIRED, expiredSpy);
+    client.on(AUTH_FAILED, failedSpy);
+    client.addPlugin(jwtPlugin);
+    client.setJwtTokenGetter(() => token);
+
+    return client.post(request).then(() => {
+      expect(failedSpy).to.have.been.called;
+      expect(expiredSpy).not.to.have.been.called;
+      expect(failedSpy.args[0][0]).to.equal(request);
+      expect(failedSpy.args[0][1]).to.equal(response);
+    });
+  });
+
+  it('emits AUTH_FAILED event if request 401s and decoded token is invalid JSON', () => {
+    const response = new Response("{ body: 'content' }", { status: 401 });
+    GLOBAL.fetch = sinon.spy(() => Promise.resolve(response));
+    const token = 'foo';
+    const request = new Request();
+    const client = new Client();
+    const failedSpy = sinon.spy();
+    const expiredSpy = sinon.spy();
+    client.on(AUTH_EXPIRED, expiredSpy);
+    client.on(AUTH_FAILED, failedSpy);
+    client.addPlugin(jwtPlugin);
+    client.setJwtTokenGetter(() => token);
+
+    return client.post(request).then(() => {
+      expect(failedSpy).to.have.been.called;
+      expect(expiredSpy).not.to.have.been.called;
+      expect(failedSpy.args[0][0]).to.equal(request);
+      expect(failedSpy.args[0][1]).to.equal(response);
+    });
+  });
+
   it('does not emit either custom event if request fails with non-401', () => {
     const response = new Response("{ body: 'content' }", { status: 500 });
     GLOBAL.fetch = sinon.spy(() => Promise.resolve(response));
