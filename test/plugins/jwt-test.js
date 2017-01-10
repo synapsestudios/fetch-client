@@ -48,6 +48,21 @@ describe('jwt-plugin', () => {
     expect(request.headers.get('Authorization')).to.equal(token);
   });
 
+  [false, null, undefined].forEach(falsyVal => {
+    it(`does not include Authorization header if getJwtToken returns ${falsyVal}`, () => {
+      const response = new Response(JSON.stringify({ body: 'content' }), { status: 200 });
+      GLOBAL.fetch = sinon.spy(() => Promise.resolve(response));
+      const client = new Client();
+      client.addPlugin(jwtPlugin);
+      client.setJwtTokenGetter(() => falsyVal);
+      const request = new Request();
+
+      client.post(request);
+
+      expect(request.headers.has('Authorization')).to.equal(false);
+    });
+  });
+
   it('resolves with response on failure', () => {
     const response = new Response("{ body: 'content' }", { status: 401 });
     GLOBAL.fetch = sinon.spy(() => Promise.resolve(response));
