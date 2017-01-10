@@ -22,7 +22,10 @@ const isExpired = (token) => {
 
 export default {
   onStart(request) {
-    request.headers.append('Authorization', this.client.getJwtToken());
+    const jwtToken = this.client.getJwtToken();
+    if (jwtToken) {
+      request.headers.append('Authorization', jwtToken);
+    }
     return request;
   },
 
