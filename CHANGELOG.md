@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+## [v1.0.2](https://github.com/synapsestudios/fetch-client/compare/v1.0.1...v1.0.2) (2017-01-10)
+
+* Updated JWT plugin to not include Authorization header if there is no token
+
 ## [v1.0.1](https://github.com/synapsestudios/fetch-client/compare/v1.0.0...v1.0.1) (2017-01-04)
 
 * Updated JWT plugin to not throw exceptions over malformed tokens
