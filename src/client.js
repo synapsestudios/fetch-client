@@ -262,7 +262,7 @@ export default class Client {
     const _options = options || {};
     let queryString = '';
 
-    _options.headers = merge(true, get(this.defaults, 'get.headers'));
+    _options.headers = merge(true, _options.headers, get(this.defaults, 'get.headers'));
 
     if (body && Object.keys(body).length) {
       queryString = this.defaults.queryStringifier.bind(this)(body);
