@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+## [v1.0.3](https://github.com/synapsestudios/fetch-client/compare/v1.0.2...v1.0.3) (2017-09-28)
+
+* Fixed issue where headers passed to client.get were not used in the request
+
 ## [v1.0.2](https://github.com/synapsestudios/fetch-client/compare/v1.0.1...v1.0.2) (2017-01-10)
 
 * Updated JWT plugin to not include Authorization header if there is no token
