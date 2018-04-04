@@ -321,8 +321,8 @@ describe('helpers & defaults', () => {
           });
 
           return expect(promise).to.be.fulfilled.then(() => {
-            // when using FormData fetch sets content type correctly on its own
-            expect(myClient.fetch.args[0][1].headers['Content-Type']).to.be.undefined;
+            // when using URLSearchParams, fetch sets content type correctly on its own
+            expect(myClient.fetch.args[0][1].headers['Content-Type']).to.be.equal('application/x-www-form-urlencoded');
 
             const formData = new GLOBAL.URLSearchParams();
             formData.append('something', 'hi');
@@ -332,7 +332,7 @@ describe('helpers & defaults', () => {
             formData.append('someRecursive[foo][]', 'array');
             formData.append('someRecursive[bar]', 'string');
             formData.append('someRecursive[baz][val]', 'object');
-            expect(myClient.fetch.args[0][1].body.appends).to.deep.equal(formData.appends);
+            expect(myClient.fetch.args[0][1].body).to.deep.equal(formData.toString());
 
             GLOBAL.URLSearchParams = URLSearchParams;
           });
@@ -369,7 +369,7 @@ describe('helpers & defaults', () => {
           });
         });
 
-        it('sends URLSearchParams Content-Type is x-www-form-urlencoded', () => {
+        it('sends a string body when Content-Type is x-www-form-urlencoded', () => {
           const myClient = new Client();
           myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
@@ -378,7 +378,7 @@ describe('helpers & defaults', () => {
           });
 
           return expect(promise).to.have.been.fulfilled.then(() => {
-            expect(myClient.fetch.args[0][1].body).to.be.instanceof(URLSearchParams);
+            expect(typeof myClient.fetch.args[0][1].body).to.be.equal('string');
           });
         });
 

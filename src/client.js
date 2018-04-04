@@ -234,8 +234,8 @@ export default class Client {
         break;
       case 'x-www-form-urlencoded':
         formObject = new URLSearchParams();
-        _body = this._encodeForm(_body, formObject);
-        _contentType = false;
+        _body = this._encodeForm(_body, formObject).toString();
+        _contentType = 'application/x-www-form-urlencoded';
         break;
       default:
     }
