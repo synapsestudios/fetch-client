@@ -321,7 +321,7 @@ describe('helpers & defaults', () => {
           });
 
           return expect(promise).to.be.fulfilled.then(() => {
-            // when using FormData fetch sets content type correctly on its own
+            // when using URLSearchParams, fetch sets content type correctly on its own
             expect(myClient.fetch.args[0][1].headers['Content-Type']).to.be.equal('application/x-www-form-urlencoded');
 
             const formData = new GLOBAL.URLSearchParams();
