@@ -1,6 +1,6 @@
 {
   "name": "@synapsestudios/fetch-client",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A wrapper for fetch to make things more easier",
   "main": "lib/index.js",
   "directories": {
