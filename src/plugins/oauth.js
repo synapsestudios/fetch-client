@@ -5,8 +5,10 @@ export default {
   onStart(request) {
     if (this.refreshing) {
       request.waitPromise = new Promise(resolve => {
-        request.headers.append('Authorization', `Bearer ${this.client.getBearerToken()}`);
-        this.client.eventEmitter.on(TOKEN_REFRESHED, resolve());
+        this.client.eventEmitter.on(TOKEN_REFRESHED,  () => {
+          request.headers.append('Authorization', `Bearer ${this.client.getBearerToken()}`);
+          resolve();
+        });
       });
     } else {
       request.headers.append('Authorization', `Bearer ${this.client.getBearerToken()}`);
@@ -28,24 +30,6 @@ export default {
   helpers: {
     setConfig(config = {}) {
       this.oauthConfig = config;
-    },
-
-    login(credentials) {
-      const body = Object.assign(
-        {
-          grant_type: 'password',
-          client_id: this.client.oauthConfig.client_id,
-          client_secret: this.client.oauthConfig.client_secret,
-        },
-        credentials
-      );
-      return this.client.fetch(this.client.oauthConfig.token_path, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: qs.stringify(body),
-      });
     },
 
     refreshToken() {
