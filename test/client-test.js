@@ -112,33 +112,33 @@ describe('client', () => {
   });
 
   describe('get', () => {
-    it('sets headers from defaults', () => {
+    it('sets headers from defaults', async () => {
       const myClient = new Client({
         get: { headers: { 'X-TEST': 'FOO' } },
       });
       GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
-      myClient.get('path');
+      await myClient.get('path');
 
       expect(GLOBAL.fetch).to.have.been.called;
       expect(GLOBAL.fetch.args[0][0].headers.get('X-TEST')).to.equal('FOO');
     });
 
-    it('merges passed in headers with defaults', () => {
+    it('merges passed in headers with defaults', async () => {
       const myClient = new Client({
         get: { headers: { 'X-TEST': 'FOO' } },
       });
       GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
-      myClient.get('path', {}, { headers: { 'X-PASSED-IN': 'VALUE' } });
+      await myClient.get('path', {}, { headers: { 'X-PASSED-IN': 'VALUE' } });
 
       expect(GLOBAL.fetch).to.have.been.called;
       expect(GLOBAL.fetch.args[0][0].headers.get('X-TEST')).to.equal('FOO');
       expect(GLOBAL.fetch.args[0][0].headers.get('X-PASSED-IN')).to.equal('VALUE');
     });
 
-    it('uses passed in headers if there are no defaults', () => {
+    it('uses passed in headers if there are no defaults', async () => {
       const myClient = new Client();
       GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
-      myClient.get('path', {}, { headers: { 'X-PASSED-IN': 'VALUE' } });
+      await myClient.get('path', {}, { headers: { 'X-PASSED-IN': 'VALUE' } });
 
       expect(GLOBAL.fetch).to.have.been.called;
       expect(GLOBAL.fetch.args[0][0].headers.get('X-PASSED-IN')).to.equal('VALUE');
