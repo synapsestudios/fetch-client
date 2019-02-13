@@ -5,7 +5,7 @@ export default {
   onStart(request) {
     if (this.refreshing) {
       request.waitPromise = new Promise(resolve => {
-        this.client.eventEmitter.on(TOKEN_REFRESHED, () => {
+        this.client.eventEmitter.once(TOKEN_REFRESHED, () => {
           request.headers.append('Authorization', `Bearer ${this.client.getBearerToken()}`);
           resolve();
         });
