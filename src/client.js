@@ -52,6 +52,10 @@ export default class Client {
     return this._callPluginMethod('onSuccess', 1, false, request, response);
   }
 
+  _callOnCompletes(request, response) {
+    return this._callPluginMethod('onCompletes', 1, false, request, response);
+  }
+
   _callOnFails(request, response) {
     return this._callPluginMethod('onFail', 1, false, request, response);
   }
@@ -94,26 +98,35 @@ export default class Client {
       onStartError = err;
     }
 
+
     let fetchPromise;
     if (request && !onStartError) {
-      fetchPromise = fetch(request)
-        .then(response => {
-          let mutatedResponse;
-          if (response.status >= 400) {
-            mutatedResponse = this._callOnFails(request, response);
-            this.eventEmitter.emit(events.REQUEST_FAILURE, request, mutatedResponse);
-          } else {
-            mutatedResponse = this._callOnSuccesses(request, response);
-            this.eventEmitter.emit(events.REQUEST_SUCCESS, request, mutatedResponse);
-          }
+      request.waitPromise = request.waitPromise || new Promise(resolve => resolve());
+      fetchPromise = request.waitPromise.then(() => fetch(request)
+          .then(response => {
+            let mutatedResponse;
 
-          return mutatedResponse;
-        })
-        .catch(err => {
-          const mutatedError = this._callOnErrors(request, err);
-          this.eventEmitter.emit(events.REQUEST_ERROR, request, mutatedError);
-          throw mutatedError;
-        });
+            mutatedResponse = this._callOnCompletes(request, response);
+            if (mutatedResponse.doOver) {
+              return mutatedResponse.doOver.then(() => this.fetch(path, options));
+            }
+
+            if (response.status >= 400) {
+              mutatedResponse = this._callOnFails(request, response);
+              this.eventEmitter.emit(events.REQUEST_FAILURE, request, mutatedResponse);
+            } else {
+              mutatedResponse = this._callOnSuccesses(request, response);
+              this.eventEmitter.emit(events.REQUEST_SUCCESS, request, mutatedResponse);
+            }
+
+            return mutatedResponse;
+          })
+          .catch(err => {
+            const mutatedError = this._callOnErrors(request, err);
+            this.eventEmitter.emit(events.REQUEST_ERROR, request, mutatedError);
+            throw mutatedError;
+          })
+      );
     } else {
       const err = onStartError || new PluginError();
       fetchPromise = Promise.reject(err);
