@@ -1,6 +1,6 @@
 {
-  "name": "synapi-client",
-  "version": "0.2.1",
+  "name": "@synapsestudios/fetch-client",
+  "version": "1.0.4",
   "description": "A wrapper for fetch to make things more easier",
   "main": "lib/index.js",
   "directories": {
@@ -14,18 +14,18 @@
     "build": "npm run clean && babel src --out-dir lib",
     "build:watch": "npm run build -- --watch",
     "lint": "eslint src",
-    "prepublish": "npm run lint && npm test"
+    "prepublish": "npm run lint && npm test && npm run build"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/synapsestudios/synapi-client.git"
+    "url": "git+https://github.com/synapsestudios/fetch-client.git"
   },
   "author": "Synapse Studios",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/synapsestudios/synapi-client/issues"
+    "url": "https://github.com/synapsestudios/fetch-client/issues"
   },
-  "homepage": "https://github.com/synapsestudios/synapi-client#readme",
+  "homepage": "https://github.com/synapsestudios/fetch-client#readme",
   "devDependencies": {
     "babel-cli": "^6.6.5",
     "babel-core": "^6.7.4",
@@ -51,7 +51,8 @@
   },
   "dependencies": {
     "eventemitter2": "^1.0.0",
-    "merge": "^1.2.0",
-    "querystring": "^0.2.0"
+    "querystring": "^0.2.0",
+    "lodash.get": "^4.3.0",
+    "merge": "^1.2.0"
   }
 }

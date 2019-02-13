@@ -17,7 +17,7 @@ import { Request, Response } from 'whatwg-fetch';
 
 describe('json-plugin', () => {
   describe('Response.parsedData()', () => {
-    it('JSON encodes response if response header content type is JSON', () => {
+    it('JSON encodes response if response header content type is "application/json"', () => {
       const body = { content: 'here it is' };
       const response = new Response(
         JSON.stringify(body),
@@ -25,6 +25,26 @@ describe('json-plugin', () => {
           status: 200,
           headers: {
             'Content-Type': 'application/json',
+          },
+        }
+      );
+      GLOBAL.fetch = sinon.spy(() => Promise.resolve(response));
+      const client = new Client();
+      client.addPlugin(jsonPlugin);
+
+      return client.post('endpoint').then(() => response.parsedBody().then(parsed => {
+        expect(parsed).to.eql(body);
+      }));
+    });
+
+    it('JSON encodes response if response header content type starts with "application/json"', () => {
+      const body = { content: 'here it is' };
+      const response = new Response(
+        JSON.stringify(body),
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
           },
         }
       );

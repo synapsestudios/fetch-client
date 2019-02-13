@@ -1,4 +1,4 @@
-# synapi-client
+# fetch-client
 
 ![shippable-badge](https://api.shippable.com/projects/5745e8ba2a8192902e216482/badge?branch=master)
 
@@ -9,16 +9,16 @@ This library is inspired by libraries like [Fetch+](https://github.com/RickWong/
 ## Installation
 
 ```
-npm install synapi-client --save
+npm install @synapsestudios/fetch-client --save
 ```
 
-Note: synapi-client assumes that fetch is available and _will not_ polyfill fetch for you.
+Note: fetch-client assumes that `fetch` and `URLSearchParams` are available and _will not_ polyfill them for you.
 
 ## Usage
 
-By default synapi-client assumes you're consuming json apis and will set `Content-Type` and `Accept` headers to 'application/json' for you.
+By default fetch-client assumes you're consuming json apis and will set `Content-Type` and `Accept` headers to 'application/json' for you.
 ```
-var Client = require('synapi-client');
+var Client = require('@synapsestudios/fetch-client');
 
 var myClient = new Client({ url: 'http://my-api.com' });
 
@@ -141,7 +141,7 @@ The JWT plugin sets the JSON web token in the request's Authorization header and
 AUTH_EXPIRED or AUTH_FAILED events on 401 responses.
 
 ```
-import { jwtPlugin } from 'synapi-client';
+import { jwtPlugin } from '@synapsestudios/fetch-client';
 import store2 from 'store2';
 
 myClient.addPlugin(jwtPlugin);
@@ -155,7 +155,7 @@ The JSON plugin adds a parsedBody method to the response object that calls
 Response.json() if the Content-Type is application/json, and Response.text() otherwise.
 
 ```
-import { jsonPlugin } from 'synapi-client';
+import { jsonPlugin } from '@synapsestudios/fetch-client';
 
 myClient.addPlugin(jsonPlugin);
 myClient.post('endpoint').then(response => {

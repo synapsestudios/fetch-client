@@ -7,21 +7,24 @@ export const allowedEncodings = [
 ];
 
 export const defaults = {
+  bracketStyleArrays: false,
+  queryStringifier(body) {
+    const urlSearchParams = new URLSearchParams();
+    this._encodeForm(body, urlSearchParams, true);
+    return `?${urlSearchParams.toString()}`;
+  },
   encoding: 'json',
   post: {
-    method: 'post',
     headers: {
       Accept: 'application/json',
     },
   },
   put: {
-    method: 'post',
     headers: {
       Accept: 'application/json',
     },
   },
   patch: {
-    method: 'post',
     headers: {
       Accept: 'application/json',
     },

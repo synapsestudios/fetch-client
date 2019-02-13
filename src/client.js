@@ -2,6 +2,7 @@ import EventEmitter2 from 'eventemitter2';
 import * as events from './events';
 import PluginError from './plugin-error';
 import merge from 'merge';
+import get from 'lodash.get';
 import { defaults as _defaults, allowedEncodings } from './defaults';
 
 export default class Client {
@@ -159,13 +160,17 @@ export default class Client {
 
   /* ---- HELPERS ---- */
 
-  _formAppendArrayOrObject(formObject, data, key) {
+  _formAppendArrayOrObject(formObject, data, key, forQueryString) {
     if (Array.isArray(data)) {
       data.forEach((val) => {
         if (typeof(val) === 'object') {
           this._formAppendArrayOrObject(formObject, val, `${key}[]`);
         } else {
-          formObject.append(`${key}[]`, val);
+          if (! forQueryString || this.defaults.bracketStyleArrays) {
+            formObject.append(`${key}[]`, val);
+          } else {
+            formObject.append(`${key}`, val);
+          }
         }
       });
     } else {
@@ -179,10 +184,10 @@ export default class Client {
     }
   }
 
-  _encodeForm(body, formObject) {
+  _encodeForm(body, formObject, forQueryString) {
     Object.keys(body).forEach((val) => {
       if (typeof(body[val]) === 'object') {
-        this._formAppendArrayOrObject(formObject, body[val], `${val}`);
+        this._formAppendArrayOrObject(formObject, body[val], `${val}`, forQueryString);
       } else {
         formObject.append(val, body[val]);
       }
@@ -238,12 +243,12 @@ export default class Client {
       case 'form-data':
         formObject = new FormData();
         _body = this._encodeForm(_body, formObject);
-        _contentType = undefined;
+        _contentType = false;
         break;
       case 'x-www-form-urlencoded':
         formObject = new URLSearchParams();
-        _body = this._encodeForm(_body, formObject);
-        _contentType = undefined;
+        _body = this._encodeForm(_body, formObject).toString();
+        _contentType = 'application/x-www-form-urlencoded';
         break;
       default:
     }
@@ -270,10 +275,10 @@ export default class Client {
     const _options = options || {};
     let queryString = '';
 
+    _options.headers = merge(true, _options.headers, get(this.defaults, 'get.headers'));
+
     if (body && Object.keys(body).length) {
-      const urlSearchParams = new URLSearchParams();
-      this._encodeForm(body, urlSearchParams);
-      queryString = `?${urlSearchParams.toString()}`;
+      queryString = this.defaults.queryStringifier.bind(this)(body);
     }
 
     _options.method = 'GET';
