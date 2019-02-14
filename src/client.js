@@ -53,7 +53,7 @@ export default class Client {
   }
 
   _callOnCompletes(request, response) {
-    return this._callPluginMethod('onCompletes', 1, false, request, response);
+    return this._callPluginMethod('onComplete', 1, false, request, response);
   }
 
   _callOnFails(request, response) {
