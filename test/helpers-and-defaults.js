@@ -82,6 +82,30 @@ describe('helpers & defaults', () => {
       });
     });
 
+    it('uses get defaults from main defaults object', () => {
+      const myClient = new Client({
+        url: 'http://something.com',
+        get: {
+          method: 'notallowed',
+          headers: { Accept: 'test', Overridden: 'no' },
+          anotherThing: 'cool',
+        },
+      });
+
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.get('test', {}, { headers: { Overridden: 'yes' }, oneMoreThing: 'cooler' })
+        .then(() => {
+          expect(myClient.fetch.args[0][1].method).to.equal('GET');
+          expect(myClient.fetch.args[0][1].headers).to.deep.equal({
+            Accept: 'test',
+            Overridden: 'yes',
+          });
+          expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
+          expect(myClient.fetch.args[0][1].oneMoreThing).to.equal('cooler');
+        });
+    });
+
     it('calls fetch() with query string in path when calling get()', () => {
       const myClient = new Client({ url: 'http://something.com' });
       myClient.fetch = sinon.spy(() => Promise.resolve('test'));
