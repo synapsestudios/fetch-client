@@ -72,12 +72,16 @@ export default class Client {
     }
   }
 
-  _getRequest(path, options) {
-    let fullPath = path;
+  _getFullPath(path) {
+    let fullPath = path || '';
     if (this.defaults && this.defaults.url) {
-      fullPath = `${this.defaults.url}${this.defaults.sep}${path}`;
+      fullPath = `${this.defaults.url}${this.defaults.sep}${fullPath}`;
     }
+    return fullPath;
+  }
 
+  _getRequest(path, options) {
+    const fullPath = this._getFullPath(path);
     return new Request(fullPath, options);
   }
 
@@ -282,7 +286,8 @@ export default class Client {
     }
 
     _options.method = 'GET';
-    return this.fetch(path + queryString, _options);
+
+    return this.fetch((path || '') + queryString, _options);
   }
 
   post(path, body, options) {

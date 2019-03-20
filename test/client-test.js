@@ -34,6 +34,19 @@ describe('client', () => {
     });
   });
 
+  it(
+    'should convert falsy values to empty string when calling _getFullPath() without a path',
+    () => {
+      const myClientWithUrl = new Client({ url: 'http://something.com' });
+      const fullPathWithUrl = myClientWithUrl._getFullPath();
+
+      const myClientWithoutUrl = new Client();
+      const fullPathWithoutUrl = myClientWithoutUrl._getFullPath();
+
+      expect(fullPathWithUrl).to.equal('http://something.com/');
+      expect(fullPathWithoutUrl).to.equal('');
+    });
+
   describe('events', () => {
     it('should emit starting event', () => {
       GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));

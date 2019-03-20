@@ -63,6 +63,16 @@ describe('helpers & defaults', () => {
       });
     });
 
+    it('calls fetch() with empty pathname when calling get() without a path', () => {
+      const myClient = new Client({ url: 'http://something.com' });
+      myClient.fetch = sinon.spy(() => Promise.resolve('test'));
+
+      return myClient.get().then(() => {
+        expect(myClient.fetch.args[0][0]).to.equal('');
+      });
+    });
+
+
     it('calls fetch() with passed options when calling get()', () => {
       const myClient = new Client({ url: 'http://something.com' });
       myClient.fetch = sinon.spy(() => Promise.resolve('test'));
