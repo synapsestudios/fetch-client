@@ -72,12 +72,16 @@ export default class Client {
     }
   }
 
-  _getRequest(path, options) {
+  _getFullPath(path) {
     let fullPath = path;
     if (this.defaults && this.defaults.url) {
       fullPath = `${this.defaults.url}${this.defaults.sep}${path}`;
     }
+    return fullPath;
+  }
 
+  _getRequest(path, options) {
+    const fullPath = this._getFullPath(path);
     return new Request(fullPath, options);
   }
 

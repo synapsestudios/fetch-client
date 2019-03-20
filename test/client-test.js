@@ -34,14 +34,18 @@ describe('client', () => {
     });
   });
 
-  it('calls _getRequest() with empty pathname when calling fetch() without a path', () => {
-    const myClient = new Client({ url: 'http://something.com' });
-    myClient._getRequest = sinon.spy(() => Promise.resolve('test'));
+  it(
+    'should convert falsy values to empty string when calling _getFullPath() without a path',
+    () => {
+      const myClientWithUrl = new Client({ url: 'http://something.com' });
+      const fullPathWithUrl = myClientWithUrl._getFullPath();
 
-    return myClient.fetch().then(() => {
-      expect(myClient._getRequest.args[0][0]).to.equal('');
+      const myClientWithoutUrl = new Client();
+      const fullPathWithoutUrl = myClientWithoutUrl._getFullPath();
+
+      expect(fullPathWithUrl).to.equal('http://something.com/');
+      expect(fullPathWithoutUrl).to.equal('');
     });
-  });
 
   describe('events', () => {
     it('should emit starting event', () => {
