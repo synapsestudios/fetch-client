@@ -2,7 +2,6 @@ import EventEmitter2 from 'eventemitter2';
 import * as events from './events';
 import PluginError from './plugin-error';
 import merge from 'merge';
-import get from 'lodash.get';
 import { defaults as _defaults, allowedEncodings } from './defaults';
 
 export default class Client {
@@ -260,26 +259,30 @@ export default class Client {
     return { body: _body, contentType: _contentType };
   }
 
-  _buildOptionsWithBody(method, body, options) {
+  _buildOptions(method, body, options) {
     let _options = { ...this.defaults[method] };
     _options = merge.recursive(true, _options, options);
 
-    const { body: encodedBody, contentType } = this._encode(body, _options.headers['Content-Type']);
-    if (contentType === false) {
-      delete _options.headers['Content-Type'];
-    } else {
-      _options.headers['Content-Type'] = contentType;
-    }
+    if (body) {
+      const { body: encodedBody, contentType } = this._encode(
+        body,
+        _options.headers['Content-Type']
+      );
 
-    _options.body = encodedBody;
+      if (contentType === false) {
+        delete _options.headers['Content-Type'];
+      } else {
+        _options.headers['Content-Type'] = contentType;
+      }
+
+      _options.body = encodedBody;
+    }
     return _options;
   }
 
   get(path, body, options) {
-    const _options = options || {};
+    const _options = this._buildOptions('get', undefined, options);
     let queryString = '';
-
-    _options.headers = merge(true, _options.headers, get(this.defaults, 'get.headers'));
 
     if (body && Object.keys(body).length) {
       queryString = this.defaults.queryStringifier.bind(this)(body);
@@ -291,19 +294,19 @@ export default class Client {
   }
 
   post(path, body, options) {
-    const _options = this._buildOptionsWithBody('post', body, options);
+    const _options = this._buildOptions('post', body, options);
     _options.method = 'POST';
     return this.fetch(path, _options);
   }
 
   put(path, body, options) {
-    const _options = this._buildOptionsWithBody('put', body, options);
+    const _options = this._buildOptions('put', body, options);
     _options.method = 'PUT';
     return this.fetch(path, _options);
   }
 
   patch(path, body, options) {
-    const _options = this._buildOptionsWithBody('patch', body, options);
+    const _options = this._buildOptions('patch', body, options);
     _options.method = 'PATCH';
     return this.fetch(path, _options);
   }
