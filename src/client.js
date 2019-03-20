@@ -28,14 +28,14 @@ export default class Client {
     return _defaults;
   }
 
-  _callPluginMethod(method, mutableArgIdx, earlyExit, ...args) {
+  async _callPluginMethod(method, mutableArgIdx, earlyExit, ...args) {
     let i = 0;
 
     const shouldContinue = () => (earlyExit ? args[mutableArgIdx] : true);
 
     while (i < this._plugins.length && shouldContinue()) {
       if (this._plugins[i][method]) {
-        args[mutableArgIdx] = this._plugins[i][method](...args);
+        args[mutableArgIdx] = await this._plugins[i][method](...args);
       }
       i += 1;
     }
@@ -84,7 +84,7 @@ export default class Client {
     return new Request(fullPath, options);
   }
 
-  fetch(path, options) {
+  async fetch(path, options) {
     let request;
     let onStartError;
 
@@ -96,7 +96,7 @@ export default class Client {
 
     this.eventEmitter.emit(events.REQUEST_START, request);
     try {
-      request = this._callOnStarts(request);
+      request = await this._callOnStarts(request);
     } catch (err) {
       onStartError = err;
     }
@@ -105,27 +105,28 @@ export default class Client {
     let fetchPromise;
     if (request && !onStartError) {
       request.waitPromise = request.waitPromise || new Promise(resolve => resolve());
+
       fetchPromise = request.waitPromise.then(() => fetch(request)
-          .then(response => {
+          .then(async response => {
             let mutatedResponse;
 
-            mutatedResponse = this._callOnCompletes(request, response);
+            mutatedResponse = await this._callOnCompletes(request, response);
             if (mutatedResponse.doOver) {
               return mutatedResponse.doOver.then(() => this.fetch(path, options));
             }
 
             if (response.status >= 400) {
-              mutatedResponse = this._callOnFails(request, response);
+              mutatedResponse = await this._callOnFails(request, response);
               this.eventEmitter.emit(events.REQUEST_FAILURE, request, mutatedResponse);
             } else {
-              mutatedResponse = this._callOnSuccesses(request, response);
+              mutatedResponse = await this._callOnSuccesses(request, response);
               this.eventEmitter.emit(events.REQUEST_SUCCESS, request, mutatedResponse);
             }
 
             return mutatedResponse;
           })
-          .catch(err => {
-            const mutatedError = this._callOnErrors(request, err);
+          .catch(async err => {
+            const mutatedError = await this._callOnErrors(request, err);
             this.eventEmitter.emit(events.REQUEST_ERROR, request, mutatedError);
             throw mutatedError;
           })

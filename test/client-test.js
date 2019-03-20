@@ -28,10 +28,9 @@ describe('client', () => {
     GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
 
     const request = new Request();
-    myClient.fetch(request);
-    return expect(request.waitPromise).to.be.fulfilled.then(() => {
+    myClient.fetch(request).then(() => expect(request.waitPromise).to.be.fulfilled.then(() => {
       expect(GLOBAL.fetch).to.be.calledWith(request);
-    });
+    }));
   });
 
   it(
@@ -262,8 +261,9 @@ describe('client', () => {
         myClient.addPlugin({ onStart: onStart1 });
         myClient.addPlugin({ onStart: onStart2 });
 
-        myClient.fetch();
-        expect(onStart2).to.have.been.calledWith(onStart1ReturnValue);
+        myClient.fetch().then(() => {
+          expect(onStart2).to.have.been.calledWith(onStart1ReturnValue);
+        });
       });
 
       it('stops calling onStarts when false returned', () => {
@@ -329,9 +329,10 @@ describe('client', () => {
         myClient.addPlugin({ onStart: onStart2 });
         myClient.addPlugin({ onStart: onStart3 });
 
-        myClient.fetch();
-        expect(onStart1).to.be.calledBefore(onStart2);
-        expect(onStart2).to.be.calledBefore(onStart3);
+        myClient.fetch().then(() => {
+          expect(onStart1).to.be.calledBefore(onStart2);
+          expect(onStart2).to.be.calledBefore(onStart3);
+        });
       });
     });
 
