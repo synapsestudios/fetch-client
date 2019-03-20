@@ -101,42 +101,29 @@ export default class Client {
       onStartError = err;
     }
 
-
-    let fetchPromise;
     if (request && !onStartError) {
-      request.waitPromise = request.waitPromise || new Promise(resolve => resolve());
+      try {
+        const response = await fetch(request);
 
-      fetchPromise = request.waitPromise.then(() => fetch(request)
-          .then(async response => {
-            let mutatedResponse;
+        let mutatedResponse = await this._callOnCompletes(request, response);
 
-            mutatedResponse = await this._callOnCompletes(request, response);
-            if (mutatedResponse.doOver) {
-              return mutatedResponse.doOver.then(() => this.fetch(path, options));
-            }
+        if (response.status >= 400) {
+          mutatedResponse = await this._callOnFails(request, response);
+          this.eventEmitter.emit(events.REQUEST_FAILURE, request, mutatedResponse);
+        } else {
+          mutatedResponse = await this._callOnSuccesses(request, response);
+          this.eventEmitter.emit(events.REQUEST_SUCCESS, request, mutatedResponse);
+        }
 
-            if (response.status >= 400) {
-              mutatedResponse = await this._callOnFails(request, response);
-              this.eventEmitter.emit(events.REQUEST_FAILURE, request, mutatedResponse);
-            } else {
-              mutatedResponse = await this._callOnSuccesses(request, response);
-              this.eventEmitter.emit(events.REQUEST_SUCCESS, request, mutatedResponse);
-            }
-
-            return mutatedResponse;
-          })
-          .catch(async err => {
-            const mutatedError = await this._callOnErrors(request, err);
-            this.eventEmitter.emit(events.REQUEST_ERROR, request, mutatedError);
-            throw mutatedError;
-          })
-      );
-    } else {
-      const err = onStartError || new PluginError();
-      fetchPromise = Promise.reject(err);
+        return mutatedResponse;
+      } catch (err) {
+        const mutatedError = await this._callOnErrors(request, err);
+        this.eventEmitter.emit(events.REQUEST_ERROR, request, mutatedError);
+        throw mutatedError;
+      }
     }
 
-    return fetchPromise;
+    throw onStartError || new PluginError();
   }
 
   addPlugin(plugin) {
