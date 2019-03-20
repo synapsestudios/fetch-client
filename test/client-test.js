@@ -130,10 +130,11 @@ describe('client', () => {
         get: { headers: { 'X-TEST': 'FOO' } },
       });
       GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
-      myClient.get('path').then(() => {
-        expect(GLOBAL.fetch).to.have.been.called;
-        expect(GLOBAL.fetch.args[0][0].headers.get('X-TEST')).to.equal('FOO');
-      });
+      myClient.get('path')
+      .then(() => {
+          expect(GLOBAL.fetch).to.have.been.called;
+          expect(GLOBAL.fetch.args[0][0].headers.get('X-TEST')).to.equal('FOO');
+        });
     });
 
     it('merges passed in headers with defaults', () => {
@@ -141,20 +142,22 @@ describe('client', () => {
         get: { headers: { 'X-TEST': 'FOO' } },
       });
       GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
-      myClient.get('path', {}, { headers: { 'X-PASSED-IN': 'VALUE' } }).then(() => {
-        expect(GLOBAL.fetch).to.have.been.called;
-        expect(GLOBAL.fetch.args[0][0].headers.get('X-TEST')).to.equal('FOO');
-        expect(GLOBAL.fetch.args[0][0].headers.get('X-PASSED-IN')).to.equal('VALUE');
-      });
+      myClient.get('path', {}, { headers: { 'X-PASSED-IN': 'VALUE' } })
+        .then(() => {
+          expect(GLOBAL.fetch).to.have.been.called;
+          expect(GLOBAL.fetch.args[0][0].headers.get('X-TEST')).to.equal('FOO');
+          expect(GLOBAL.fetch.args[0][0].headers.get('X-PASSED-IN')).to.equal('VALUE');
+        });
     });
 
     it('uses passed in headers if there are no defaults', () => {
       const myClient = new Client();
       GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
-      myClient.get('path', {}, { headers: { 'X-PASSED-IN': 'VALUE' } }).then(() => {
-        expect(GLOBAL.fetch).to.have.been.called;
-        expect(GLOBAL.fetch.args[0][0].headers.get('X-PASSED-IN')).to.equal('VALUE');
-      });
+      myClient.get('path', {}, { headers: { 'X-PASSED-IN': 'VALUE' } })
+        .then(() => {
+          expect(GLOBAL.fetch).to.have.been.called;
+          expect(GLOBAL.fetch.args[0][0].headers.get('X-PASSED-IN')).to.equal('VALUE');
+        });
     });
   });
 
@@ -229,7 +232,7 @@ describe('client', () => {
       it('calls onStart', () => {
         GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
         const myClient = new Client();
-        const onStart = sinon.spy(request => request);
+        const onStart = sinon.spy((request) => request);
         const myPlugin = { onStart };
 
         myClient.addPlugin(myPlugin);
@@ -239,7 +242,7 @@ describe('client', () => {
         });
       });
 
-      it("doesn't break when onStart is left out", () => {
+      it('doesn\'t break when onStart is left out', () => {
         GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
         const myClient = new Client();
         const myPlugin = { arbitrary: 'object' };
@@ -252,8 +255,8 @@ describe('client', () => {
       it('calls onStart with the previous onStart return value', () => {
         const onStart1ReturnValue = { test: 'test' };
         GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
-        const onStart1 = sinon.spy(request => onStart1ReturnValue);
-        const onStart2 = sinon.spy(request => request);
+        const onStart1 = sinon.spy((request) => onStart1ReturnValue);
+        const onStart2 = sinon.spy((request) => request);
 
         const myClient = new Client();
         myClient.addPlugin({ onStart: onStart1 });
@@ -309,16 +312,17 @@ describe('client', () => {
 
         const promise = myClient.fetch();
         expect(GLOBAL.fetch).to.not.be.called;
-        return expect(promise).to.be.rejected.then(err => {
-          expect(err.name).to.equal('PluginError');
-        });
+        return expect(promise).to.be.rejected
+          .then(err => {
+            expect(err.name).to.equal('PluginError');
+          });
       });
 
       it('calls multiple plugin in the order they were added', () => {
         GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
-        const onStart1 = sinon.spy(request => request);
-        const onStart2 = sinon.spy(request => request);
-        const onStart3 = sinon.spy(request => request);
+        const onStart1 = sinon.spy((request) => request);
+        const onStart2 = sinon.spy((request) => request);
+        const onStart3 = sinon.spy((request) => request);
 
         const myClient = new Client();
         myClient.addPlugin({ onStart: onStart1 });
@@ -361,7 +365,7 @@ describe('client', () => {
         const myPlugin = { onSuccess: sinon.spy(), onFail: sinon.spy() };
         myClient.addPlugin(myPlugin);
 
-        return myClient.fetch().catch(err => {
+        return myClient.fetch().catch((err) => {
           expect(myPlugin.onSuccess).to.have.callCount(0);
         });
       });
