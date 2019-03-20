@@ -1,6 +1,6 @@
 CHANGELOG
 =========
-## [v1.1.0](https://github.com/synapsestudios/fetch-client/compare/v1.0.3...v1.0.4) (2019-03-20)
+## [v1.1.0](https://github.com/synapsestudios/fetch-client/compare/v1.0.4...v1.1.0) (2019-03-20)
 * updated oauth plugin to know about refresh tokens and to automatically fetch new authorization and id tokens
 
 ## [v1.0.4](https://github.com/synapsestudios/fetch-client/compare/v1.0.3...v1.0.4) (2017-04-04)
