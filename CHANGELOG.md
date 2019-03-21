@@ -1,5 +1,11 @@
 CHANGELOG
 =========
+## [v2.0.0](https://github.com/synapsestudios/fetch-client/compare/v1.1.0...v2.0.0) (2019-03-21)
+* Fixed issue where calling helper methods without a pathname results in calls to `/undefined`
+* Fixed issue where `get()` helper didn't correctly inherit default client options
+* Updated plugin interface to be async, plugins can now return Promises
+* Updated `package.json` to version lock dependencies and restrict devDependencies to patch versions
+
 ## [v1.1.0](https://github.com/synapsestudios/fetch-client/compare/v1.0.4...v1.1.0) (2019-03-20)
 * updated oauth plugin to know about refresh tokens and to automatically fetch new authorization and id tokens
 
