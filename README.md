@@ -107,13 +107,13 @@ myClient.get('coolthings')
 
 ### Plugins
 
-Our plugin implementation allows you to register objects with methods that will trigger during request lifecycle. Plugins are more robust than event callbacks because they have access to the event emitter, they are allowed to alter the Response object, and they can register their own helper methods on your client object.
+Our plugin implementation allows you to register objects with async methods that will trigger during request lifecycle. Plugins are more robust than event callbacks because they have access to the event emitter, they are allowed to alter the Response object, and they can register their own helper methods on your client object. You can also return a Promise which will be resolved before the request lifecycle continues.
 
 The most basic implementation of a plugin looks like this
 
 ```
 var myPlugin = {
-  onStart: function(request) {
+  onStart: async function(request) {
     return request;
   }
 }

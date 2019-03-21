@@ -1,12 +1,14 @@
 import qs from 'querystring';
+
 const TOKEN_REFRESHED = 'TOKEN_REFRESHED';
 const TOKEN_REFRESH_FAILED = 'TOKEN_REFRESH_FAILED';
 
 export default {
-  onStart(request) {
+  async onStart(request) {
     if (this.client.refreshing) {
       request.secondTry = true;
-      request.waitPromise = new Promise(resolve => {
+
+      await new Promise(resolve => {
         this.client.eventEmitter.once(TOKEN_REFRESHED, () => {
           request.headers.append('Authorization', `Bearer ${this.client.getBearerToken()}`);
           resolve();
@@ -19,28 +21,32 @@ export default {
     return request;
   },
 
-  onComplete(request, response) {
+  async onComplete(request, response) {
     const usedRefreshTokens = this.client.usedRefreshTokens;
     const currentRefreshToken = this.client.getRefreshToken();
 
     if (response.status === 401 && !usedRefreshTokens.includes(currentRefreshToken)) {
       this.client.refreshing = true;
-      response.doOver = this.helpers.refreshToken(
+
+      const refreshResponse = await this.helpers.refreshToken(
         this.client.oauthConfig,
-        this.client.getRefreshToken,
-      )
-        .then(async (res) => {
-          this.client.refreshing = false;
-          if (res.status === 200) {
-            this.client.usedRefreshTokens.push(currentRefreshToken);
-            this.client.eventEmitter.emit(TOKEN_REFRESHED);
-            const tokenRefreshResponse = await res.json();
-            await this.client.onRefreshResponse(tokenRefreshResponse);
-          } else {
-            this.client.eventEmitter.emit(TOKEN_REFRESH_FAILED);
-          }
-        });
+        this.client.getRefreshToken
+      );
+
+      this.client.refreshing = false;
+
+      if (refreshResponse.status === 200) {
+        this.client.usedRefreshTokens.push(currentRefreshToken);
+        this.client.eventEmitter.emit(TOKEN_REFRESHED);
+        const tokenRefreshResponseBody = await refreshResponse.json();
+        await this.client.onRefreshResponse(tokenRefreshResponseBody);
+      } else {
+        this.client.eventEmitter.emit(TOKEN_REFRESH_FAILED);
+      }
+
+      return this.client.fetch(request);
     }
+
     return response;
   },
 
