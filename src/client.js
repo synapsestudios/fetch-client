@@ -108,7 +108,11 @@ export default class Client {
 
             mutatedResponse = this._callOnCompletes(request, response);
             if (mutatedResponse.doOver) {
-              return mutatedResponse.doOver.then(() => this.fetch(path, options));
+              return mutatedResponse.doOver.then((refreshed) => {
+                if (refreshed) {
+                  this.fetch(path, options);
+                }
+              });
             }
 
             if (response.status >= 400) {
