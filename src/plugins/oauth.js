@@ -36,8 +36,10 @@ export default {
             this.client.eventEmitter.emit(TOKEN_REFRESHED);
             const tokenRefreshResponse = await res.json();
             await this.client.onRefreshResponse(tokenRefreshResponse);
+            return true;
           } else {
             this.client.eventEmitter.emit(TOKEN_REFRESH_FAILED);
+            return false;
           }
         });
     }
