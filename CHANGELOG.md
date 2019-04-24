@@ -1,7 +1,7 @@
 CHANGELOG
 =========
 ## [v1.1.1](https://github.com/synapsestudios/fetch-client/compare/v1.1.0...v1.1.1) (2019-04-24)
-* fixed bug in oauth plugin that caused infinite request loop if token refresh failed
+* fixed bug in oauth plugin that caused an infinite request loop if token refresh failed
 
 ## [v1.1.0](https://github.com/synapsestudios/fetch-client/compare/v1.0.4...v1.1.0) (2019-03-20)
 * updated oauth plugin to know about refresh tokens and to automatically fetch new authorization and id tokens
