@@ -56,7 +56,7 @@ describe('oauth-plugin', () => {
     oauthPlugin.helpers.refreshToken = () => Promise.resolve(refreshResponse);
     client.setBearerTokenGetter(() => 'TOKEN');
     client.setRefreshTokenGetter(() => 'REFRESH_TOKEN');
-    const refreshCallback = sinon.spy();
+    const refreshCallback = sinon.spy(() => Promise.resolve());
     client.setOnRefreshResponse(refreshCallback);
     client.setUsedRefreshTokens([]);
     client.setConfig({ refresh_path: '/refresh' });

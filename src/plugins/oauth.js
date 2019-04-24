@@ -29,14 +29,14 @@ export default {
         this.client.oauthConfig,
         this.client.getRefreshToken,
       )
-        .then(async (res) => {
+        .then(res => {
           this.client.refreshing = false;
           if (res.status === 200) {
             this.client.usedRefreshTokens.push(currentRefreshToken);
             this.client.eventEmitter.emit(TOKEN_REFRESHED);
-            const tokenRefreshResponse = await res.json();
-            await this.client.onRefreshResponse(tokenRefreshResponse);
-            return true;
+            return res.json().then(tokenRefreshResponse =>
+              this.client.onRefreshResponse(tokenRefreshResponse).then(() => true)
+            );
           }
           this.client.eventEmitter.emit(TOKEN_REFRESH_FAILED);
           return false;
