@@ -23,7 +23,11 @@ export default {
     const usedRefreshTokens = this.client.usedRefreshTokens;
     const currentRefreshToken = this.client.getRefreshToken();
 
-    if (response.status === 401 && !usedRefreshTokens.includes(currentRefreshToken)) {
+    if (
+      !this.client.refreshing &&
+      response.status === 401 &&
+      !usedRefreshTokens.includes(currentRefreshToken)
+    ) {
       this.client.refreshing = true;
       response.doOver = this.helpers.refreshToken(
         this.client.oauthConfig,
