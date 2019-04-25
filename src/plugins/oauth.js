@@ -29,12 +29,13 @@ export default {
       !usedRefreshTokens.includes(currentRefreshToken)
     ) {
       this.client.refreshing = true;
-      response.doOver = this.helpers.refreshToken(
+      this.client.refreshRequestPromise = response.doOver = this.helpers.refreshToken(
         this.client.oauthConfig,
         this.client.getRefreshToken,
       )
         .then(res => {
           this.client.refreshing = false;
+          this.client.refreshRequestPromise = null;
           if (res.status === 200) {
             this.client.usedRefreshTokens.push(currentRefreshToken);
             this.client.eventEmitter.emit(TOKEN_REFRESHED);
@@ -45,6 +46,8 @@ export default {
           this.client.eventEmitter.emit(TOKEN_REFRESH_FAILED);
           return false;
         });
+    } else if (this.client.refreshing) {
+      response.doOver = this.client.refreshRequestPromise;
     }
     return response;
   },
