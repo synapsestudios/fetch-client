@@ -67,4 +67,94 @@ describe('oauth-plugin', () => {
       expect(refreshCallback).to.be.calledOnce;
     });
   });
+
+  it('does not send multiple refresh requests if multiple simulatenous requests 401', () => {
+    const client = new Client();
+    const oauthPlugin = clone(oauthPluginOriginal);
+    client.addPlugin(oauthPlugin);
+
+    const response401i = new Response(JSON.stringify({ body: 'content' }), { status: 401 });
+    const response401ii = new Response(JSON.stringify({ body: 'content' }), { status: 401 });
+    const response200 = new Response(JSON.stringify({ body: 'content' }), { status: 200 });
+    GLOBAL.fetch = sinon.stub();
+    // Both initial requests 401
+    GLOBAL.fetch.onCall(0).returns(
+      new Promise((resolve) => setTimeout(() => resolve(response401i)), 25),
+    );
+    GLOBAL.fetch.onCall(1).returns(
+      new Promise((resolve) => setTimeout(() => resolve(response401ii)), 50),
+    );
+    // On retry, they succeed
+    GLOBAL.fetch.onCall(2).returns(
+      new Promise((resolve) => setTimeout(() => resolve(response200)), 25),
+    );
+    GLOBAL.fetch.onCall(3).returns(
+      new Promise((resolve) => setTimeout(() => resolve(response200)), 25),
+    );
+
+    const refreshResponse = new Response(JSON.stringify({}), { status: 200 });
+    oauthPlugin.helpers.refreshToken = sinon.spy(
+      () => new Promise(resolve => setTimeout(() => resolve(refreshResponse), 50))
+    );
+    client.setBearerTokenGetter(() => 'TOKEN');
+    client.setRefreshTokenGetter(() => 'REFRESH_TOKEN');
+    const refreshCallback = sinon.spy(() => Promise.resolve());
+    client.setOnRefreshResponse(refreshCallback);
+    client.setUsedRefreshTokens([]);
+    client.setConfig({ refresh_path: '/refresh' });
+
+    const request = new Request('/some/endpoint');
+    const request2 = new Request('/some/endpoint');
+    return Promise.all([
+      client.post(request),
+      client.post(request2),
+    ]).then(() => {
+      expect(GLOBAL.fetch.callCount).to.equal(4);
+      expect(oauthPlugin.helpers.refreshToken).to.be.calledOnce;
+    });
+  });
+
+  it('does not send multiple refresh reqs if reqs that 401 happen in quick succession', () => {
+    const client = new Client();
+    const oauthPlugin = clone(oauthPluginOriginal);
+    client.addPlugin(oauthPlugin);
+
+    const response401i = new Response(JSON.stringify({ body: 'content' }), { status: 401 });
+    const response401ii = new Response(JSON.stringify({ body: 'content' }), { status: 401 });
+    const response200 = new Response(JSON.stringify({ body: 'content' }), { status: 200 });
+    GLOBAL.fetch = sinon.stub();
+    // Requests in quick succession both 401
+    GLOBAL.fetch.onCall(0).returns(
+      new Promise((resolve) => setTimeout(() => resolve(response401i)), 25),
+    );
+    // The second request won't be attempted while refreshing
+    GLOBAL.fetch.onCall(1).returns(
+      new Promise((resolve) => setTimeout(() => resolve(response200)), 25),
+    );
+    GLOBAL.fetch.onCall(2).returns(
+      new Promise((resolve) => setTimeout(() => resolve(response200)), 25),
+    );
+
+    const refreshResponse = new Response(JSON.stringify({}), { status: 200 });
+    oauthPlugin.helpers.refreshToken = sinon.spy(
+      () => new Promise(resolve => setTimeout(() => resolve(refreshResponse), 50))
+    );
+    client.setBearerTokenGetter(() => 'TOKEN');
+    client.setRefreshTokenGetter(() => 'REFRESH_TOKEN');
+    const refreshCallback = sinon.spy(() => Promise.resolve());
+    client.setOnRefreshResponse(refreshCallback);
+    client.setUsedRefreshTokens([]);
+    client.setConfig({ refresh_path: '/refresh' });
+
+    const request = new Request('/some/endpoint');
+    const request2 = new Request('/some/other/endpoint');
+    return Promise.all([
+      client.post(request),
+      // Second request 5 ms later
+      new Promise(resolve => setTimeout(() => resolve(client.post(request2)), 5)),
+    ]).then(() => {
+      expect(GLOBAL.fetch.callCount).to.equal(3);
+      expect(oauthPlugin.helpers.refreshToken).to.be.calledOnce;
+    });
+  });
 });
