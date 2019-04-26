@@ -25,13 +25,26 @@ export default {
     const usedRefreshTokens = this.client.usedRefreshTokens;
     const currentRefreshToken = this.client.getRefreshToken();
 
-    if (response.status === 401 && !usedRefreshTokens.includes(currentRefreshToken)) {
+    if (this.client.refreshing) {
+      const refreshResponse = await this.client.refreshPromise;
+      if (refreshResponse.status === 200) {
+        return this.client.fetch(request);
+      }
+    }
+
+    if (
+      !this.client.refreshing &&
+      response.status === 401 &&
+      !usedRefreshTokens.includes(currentRefreshToken)
+    ) {
       this.client.refreshing = true;
 
-      const refreshResponse = await this.helpers.refreshToken(
+      this.client.refreshPromise = this.helpers.refreshToken(
         this.client.oauthConfig,
         this.client.getRefreshToken
       );
+
+      const refreshResponse = await this.client.refreshPromise;
 
       this.client.refreshing = false;
 
@@ -40,11 +53,9 @@ export default {
         this.client.eventEmitter.emit(TOKEN_REFRESHED);
         const tokenRefreshResponseBody = await refreshResponse.json();
         await this.client.onRefreshResponse(tokenRefreshResponseBody);
-      } else {
-        this.client.eventEmitter.emit(TOKEN_REFRESH_FAILED);
+        return this.client.fetch(request);
       }
-
-      return this.client.fetch(request);
+      this.client.eventEmitter.emit(TOKEN_REFRESH_FAILED);
     }
 
     return response;
