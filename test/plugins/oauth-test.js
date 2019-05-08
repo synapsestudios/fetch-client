@@ -120,7 +120,6 @@ describe('oauth-plugin', () => {
     client.addPlugin(oauthPlugin);
 
     const response401i = new Response(JSON.stringify({ body: 'content' }), { status: 401 });
-    const response401ii = new Response(JSON.stringify({ body: 'content' }), { status: 401 });
     const response200 = new Response(JSON.stringify({ body: 'content' }), { status: 200 });
     GLOBAL.fetch = sinon.stub();
     // Requests in quick succession both 401
@@ -152,9 +151,12 @@ describe('oauth-plugin', () => {
       client.post(request),
       // Second request 5 ms later
       new Promise(resolve => setTimeout(() => resolve(client.post(request2)), 5)),
-    ]).then(() => {
+    ]).then((resolutions) => {
       expect(GLOBAL.fetch.callCount).to.equal(3);
       expect(oauthPlugin.helpers.refreshToken).to.be.calledOnce;
+      // requests resolve to the response object
+      expect(resolutions[0]).to.be.instanceOf(Response);
+      expect(resolutions[1]).to.be.instanceOf(Response);
     });
   });
 });
