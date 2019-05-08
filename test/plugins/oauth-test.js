@@ -79,17 +79,17 @@ describe('oauth-plugin', () => {
     GLOBAL.fetch = sinon.stub();
     // Both initial requests 401
     GLOBAL.fetch.onCall(0).returns(
-      new Promise((resolve) => setTimeout(() => resolve(response401i)), 25),
+      new Promise((resolve) => setTimeout(() => resolve(response401i), 25)),
     );
     GLOBAL.fetch.onCall(1).returns(
-      new Promise((resolve) => setTimeout(() => resolve(response401ii)), 50),
+      new Promise((resolve) => setTimeout(() => resolve(response401ii), 50)),
     );
     // On retry, they succeed
     GLOBAL.fetch.onCall(2).returns(
-      new Promise((resolve) => setTimeout(() => resolve(response200)), 25),
+      new Promise((resolve) => setTimeout(() => resolve(response200), 25)),
     );
     GLOBAL.fetch.onCall(3).returns(
-      new Promise((resolve) => setTimeout(() => resolve(response200)), 25),
+      new Promise((resolve) => setTimeout(() => resolve(response200), 25)),
     );
 
     const refreshResponse = new Response(JSON.stringify({}), { status: 200 });
@@ -119,19 +119,20 @@ describe('oauth-plugin', () => {
     const oauthPlugin = clone(oauthPluginOriginal);
     client.addPlugin(oauthPlugin);
 
-    const response401i = new Response(JSON.stringify({ body: 'content' }), { status: 401 });
+    const response401 = new Response(JSON.stringify({ body: 'content' }), { status: 401 });
     const response200 = new Response(JSON.stringify({ body: 'content' }), { status: 200 });
+    const response200ii = new Response(JSON.stringify({ body: 'content' }), { status: 200 });
     GLOBAL.fetch = sinon.stub();
     // Requests in quick succession both 401
     GLOBAL.fetch.onCall(0).returns(
-      new Promise((resolve) => setTimeout(() => resolve(response401i)), 25),
+      new Promise((resolve) => setTimeout(() => resolve(response401), 1)),
     );
     // The second request won't be attempted while refreshing
     GLOBAL.fetch.onCall(1).returns(
-      new Promise((resolve) => setTimeout(() => resolve(response200)), 25),
+      new Promise((resolve) => setTimeout(() => resolve(response200), 1)),
     );
     GLOBAL.fetch.onCall(2).returns(
-      new Promise((resolve) => setTimeout(() => resolve(response200)), 25),
+      new Promise((resolve) => setTimeout(() => resolve(response200ii), 250)),
     );
 
     const refreshResponse = new Response(JSON.stringify({}), { status: 200 });
@@ -155,8 +156,8 @@ describe('oauth-plugin', () => {
       expect(GLOBAL.fetch.callCount).to.equal(3);
       expect(oauthPlugin.helpers.refreshToken).to.be.calledOnce;
       // requests resolve to the response object
-      expect(resolutions[0]).to.be.instanceOf(Response);
-      expect(resolutions[1]).to.be.instanceOf(Response);
+      expect(resolutions[0]).to.equal(response200ii); // Not sure why this one is first but it's fine
+      expect(resolutions[1]).to.equal(response200);
     });
   });
 });
