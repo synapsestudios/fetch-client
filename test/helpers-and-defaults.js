@@ -16,29 +16,29 @@ import { Request, Response } from 'whatwg-fetch';
 import FormData from 'form-data';
 import { URLSearchParams } from 'urlsearchparams';
 
-GLOBAL.Request = Request;
-GLOBAL.FormData = FormData;
-GLOBAL.URLSearchParams = URLSearchParams;
+global.Request = Request;
+global.FormData = FormData;
+global.URLSearchParams = URLSearchParams;
 
 describe('helpers & defaults', () => {
   describe('defaults', () => {
     it('prepends default url to fetch path', () => {
-      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      global.fetch = sinon.spy(() => Promise.resolve('test'));
       const myClient = new Client({ url: 'http://something.com/' });
 
       return myClient.fetch('test').then(() => {
-        expect(GLOBAL.fetch.args[0][0]).to.be.instanceof(Request);
-        expect(GLOBAL.fetch.args[0][0].url).to.equal('http://something.com/test');
+        expect(global.fetch.args[0][0]).to.be.instanceof(Request);
+        expect(global.fetch.args[0][0].url).to.equal('http://something.com/test');
       });
     });
 
     it('includes slash in url if omitted', () => {
-      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      global.fetch = sinon.spy(() => Promise.resolve('test'));
       const myClient = new Client({ url: 'http://something.com' });
 
       return myClient.fetch('test').then(() => {
-        expect(GLOBAL.fetch.args[0][0]).to.be.instanceof(Request);
-        expect(GLOBAL.fetch.args[0][0].url).to.equal('http://something.com/test');
+        expect(global.fetch.args[0][0]).to.be.instanceof(Request);
+        expect(global.fetch.args[0][0].url).to.equal('http://something.com/test');
       });
     });
 
@@ -273,7 +273,7 @@ describe('helpers & defaults', () => {
         });
 
         it('encodes body as FormData when encoding is form-data', () => {
-          GLOBAL.FormData = FormObjectMock;
+          global.FormData = FormObjectMock;
 
           const myClient = new Client({ encoding: 'form-data' });
           myClient.fetch = sinon.spy(() => Promise.resolve('test'));
@@ -290,7 +290,7 @@ describe('helpers & defaults', () => {
             // when using FormData fetch sets content type correctly on its own
             expect(myClient.fetch.args[0][1].headers['Content-Type']).to.be.undefined;
 
-            const formData = new GLOBAL.FormData();
+            const formData = new global.FormData();
             formData.append('something', 'hi');
             formData.append('someArray[]', 'hey');
             formData.append('someArray[]', 'ho');
@@ -303,12 +303,12 @@ describe('helpers & defaults', () => {
             formData.append('someRecursive[baz][val]', 'object');
             expect(myClient.fetch.args[0][1].body.appends).to.deep.equal(formData.appends);
 
-            GLOBAL.FormData = FormData;
+            global.FormData = FormData;
           });
         });
 
         it('encodes body as URLSearchParams when encoding is x-www-form-urlencoded', () => {
-          GLOBAL.URLSearchParams = FormObjectMock;
+          global.URLSearchParams = FormObjectMock;
 
           const myClient = new Client({ encoding: 'x-www-form-urlencoded' });
           myClient.fetch = sinon.spy(() => Promise.resolve('test'));
@@ -324,7 +324,7 @@ describe('helpers & defaults', () => {
             // when using URLSearchParams, fetch sets content type correctly on its own
             expect(myClient.fetch.args[0][1].headers['Content-Type']).to.be.equal('application/x-www-form-urlencoded');
 
-            const formData = new GLOBAL.URLSearchParams();
+            const formData = new global.URLSearchParams();
             formData.append('something', 'hi');
             formData.append('someArray[]', 'hey');
             formData.append('someArray[]', 'ho');
@@ -334,7 +334,7 @@ describe('helpers & defaults', () => {
             formData.append('someRecursive[baz][val]', 'object');
             expect(myClient.fetch.args[0][1].body).to.deep.equal(formData.toString());
 
-            GLOBAL.URLSearchParams = URLSearchParams;
+            global.URLSearchParams = URLSearchParams;
           });
         });
 
