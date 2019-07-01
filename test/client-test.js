@@ -28,15 +28,21 @@ describe('client', () => {
     global.fetch = sinon.spy(() => Promise.resolve('test'));
 
     const request = new Request();
-    myClient.fetch(request);
-    expect(global.fetch).to.be.calledWith(request);
+    return myClient.fetch(request).then(() => expect(global.fetch).to.be.calledWith(request));
   });
 
-  describe('timeout', () => {
-    it('should have a default timeout', );
-    it('should honor global timeout');
-    it('should overwrite global timeout');
-  });
+  it(
+    'should convert falsy values to empty string when calling _getFullPath() without a path',
+    () => {
+      const myClientWithUrl = new Client({ url: 'http://something.com' });
+      const fullPathWithUrl = myClientWithUrl._getFullPath();
+
+      const myClientWithoutUrl = new Client();
+      const fullPathWithoutUrl = myClientWithoutUrl._getFullPath();
+
+      expect(fullPathWithUrl).to.equal('http://something.com/');
+      expect(fullPathWithoutUrl).to.equal('');
+    });
 
   describe('events', () => {
     it('should emit starting event', () => {
@@ -121,10 +127,11 @@ describe('client', () => {
         get: { headers: { 'X-TEST': 'FOO' } },
       });
       global.fetch = sinon.spy(() => Promise.resolve('test'));
-      myClient.get('path');
-
-      expect(global.fetch).to.have.been.called;
-      expect(global.fetch.args[0][0].headers.get('X-TEST')).to.equal('FOO');
+      myClient.get('path')
+      .then(() => {
+          expect(global.fetch).to.have.been.called;
+          expect(global.fetch.args[0][0].headers.get('X-TEST')).to.equal('FOO');
+        });
     });
 
     it('merges passed in headers with defaults', () => {
@@ -132,20 +139,22 @@ describe('client', () => {
         get: { headers: { 'X-TEST': 'FOO' } },
       });
       global.fetch = sinon.spy(() => Promise.resolve('test'));
-      myClient.get('path', {}, { headers: { 'X-PASSED-IN': 'VALUE' } });
-
-      expect(global.fetch).to.have.been.called;
-      expect(global.fetch.args[0][0].headers.get('X-TEST')).to.equal('FOO');
-      expect(global.fetch.args[0][0].headers.get('X-PASSED-IN')).to.equal('VALUE');
+      myClient.get('path', {}, { headers: { 'X-PASSED-IN': 'VALUE' } })
+        .then(() => {
+          expect(global.fetch).to.have.been.called;
+          expect(global.fetch.args[0][0].headers.get('X-TEST')).to.equal('FOO');
+          expect(global.fetch.args[0][0].headers.get('X-PASSED-IN')).to.equal('VALUE');
+        });
     });
 
     it('uses passed in headers if there are no defaults', () => {
       const myClient = new Client();
       global.fetch = sinon.spy(() => Promise.resolve('test'));
-      myClient.get('path', {}, { headers: { 'X-PASSED-IN': 'VALUE' } });
-
-      expect(global.fetch).to.have.been.called;
-      expect(global.fetch.args[0][0].headers.get('X-PASSED-IN')).to.equal('VALUE');
+      myClient.get('path', {}, { headers: { 'X-PASSED-IN': 'VALUE' } })
+        .then(() => {
+          expect(global.fetch).to.have.been.called;
+          expect(global.fetch.args[0][0].headers.get('X-PASSED-IN')).to.equal('VALUE');
+        });
     });
   });
 
@@ -241,16 +250,18 @@ describe('client', () => {
       });
 
       it('calls onStart with the previous onStart return value', () => {
+        const onStart1ReturnValue = { test: 'test' };
         global.fetch = sinon.spy(() => Promise.resolve('test'));
-        const onStart1 = sinon.spy((request) => 'test');
+        const onStart1 = sinon.spy((request) => onStart1ReturnValue);
         const onStart2 = sinon.spy((request) => request);
 
         const myClient = new Client();
         myClient.addPlugin({ onStart: onStart1 });
         myClient.addPlugin({ onStart: onStart2 });
 
-        myClient.fetch();
-        expect(onStart2).to.have.been.calledWith('test');
+        return myClient.fetch().then(() => {
+          expect(onStart2).to.have.been.calledWith(onStart1ReturnValue);
+        });
       });
 
       it('stops calling onStarts when false returned', () => {
@@ -316,9 +327,10 @@ describe('client', () => {
         myClient.addPlugin({ onStart: onStart2 });
         myClient.addPlugin({ onStart: onStart3 });
 
-        myClient.fetch();
-        expect(onStart1).to.be.calledBefore(onStart2);
-        expect(onStart2).to.be.calledBefore(onStart3);
+        return myClient.fetch().then(() => {
+          expect(onStart1).to.be.calledBefore(onStart2);
+          expect(onStart2).to.be.calledBefore(onStart3);
+        });
       });
     });
 
