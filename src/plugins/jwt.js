@@ -20,14 +20,28 @@ const isExpired = (token) => {
   return false;
 };
 
-export default {
+class JwtPlugin {
+  constructor() {
+    this.helpers = {
+      setJwtTokenGetter(func) {
+        this.getJwtToken = func;
+      },
+
+      getJwtToken() {
+        throw new Error(
+          'You must define getJwtToken with client.helpers.setJwtTokenGetter'
+        );
+      },
+    };
+  }
+
   onStart(request) {
     const jwtToken = this.client.getJwtToken();
     if (jwtToken) {
       request.headers.append('Authorization', jwtToken);
     }
     return request;
-  },
+  }
 
   onFail(request, response) {
     if (response.status === 401) {
@@ -38,17 +52,8 @@ export default {
       }
     }
     return response;
-  },
-
-  helpers: {
-    setJwtTokenGetter(func) {
-      this.getJwtToken = func;
-    },
-
-    getJwtToken() {
-      throw new Error(
-        'You must define getJwtToken with client.helpers.setJwtTokenGetter'
-      );
-    },
-  },
+  }
 };
+
+export default JwtPlugin;
+
