@@ -1,5 +1,8 @@
 CHANGELOG
 =========
+## [v1.1.3](https://github.com/synapsestudios/fetch-client/compare/v1.1.2...v1.1.3) (2019-05-08)
+* fixed bug where retried 401 request returns undefined
+
 ## [v1.1.2](https://github.com/synapsestudios/fetch-client/compare/v1.1.1...v1.1.2) (2019-04-26)
 * fixed bug where multiple refresh requests were made with the same refresh token if simultaneous requests 401
 
