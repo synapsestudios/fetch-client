@@ -4,6 +4,14 @@ import PluginError from './plugin-error';
 import merge from 'merge';
 import { defaults as _defaults, allowedEncodings } from './defaults';
 
+class TimeoutError extends Error {
+  constructor(timeout) {
+    super('Request timed out');
+    this.name = 'TimeoutError';
+    this.timeout = timeout;
+  }
+}
+
 export default class Client {
   constructor(defaults) {
     const encodingIsInvalid = () => defaults &&
@@ -103,7 +111,13 @@ export default class Client {
 
     if (request && !onStartError) {
       try {
-        const response = await fetch(request);
+        const response = await Promise.race([
+          fetch(request),
+          new Promise((_, reject) => setTimeout(
+            () => reject(new TimeoutError(options.timeout || this.defaults.timeout)),
+            options.timeout || this.defaults.timeout
+          )),
+        ]);
 
         let mutatedResponse = await this._callOnCompletes(request, response);
 

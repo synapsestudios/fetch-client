@@ -15,8 +15,8 @@ import { AUTH_EXPIRED, AUTH_FAILED } from '../../src/events';
 
 // polyfills
 import { Request, Response } from 'whatwg-fetch';
-GLOBAL.btoa = (str) => new Buffer(str, 'binary').toString('base64');
-GLOBAL.atob = (str) => new Buffer(str, 'base64').toString('binary');
+global.btoa = (str) => new Buffer(str, 'binary').toString('base64');
+global.atob = (str) => new Buffer(str, 'base64').toString('binary');
 
 describe('jwt-plugin', () => {
   let jwtPlugin;
@@ -24,7 +24,7 @@ describe('jwt-plugin', () => {
   const getToken = (payload) => `${btoa('{}')}.${btoa(JSON.stringify(payload))}.${btoa('{}')}`;
 
   beforeEach(() => {
-    GLOBAL.fetch = null;
+    global.fetch = null;
     jwtPlugin = clone(jwtPluginOriginal);
   });
 
@@ -36,7 +36,7 @@ describe('jwt-plugin', () => {
   });
 
   it('sets Authorization header to value returned by getJwtToken', () => {
-    GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+    global.fetch = sinon.spy(() => Promise.resolve('test'));
     const token = getToken({ exp: 1 });
     const request = new Request();
     const client = new Client();
@@ -51,7 +51,7 @@ describe('jwt-plugin', () => {
   [false, null, undefined].forEach(falsyVal => {
     it(`does not include Authorization header if getJwtToken returns ${falsyVal}`, () => {
       const response = new Response(JSON.stringify({ body: 'content' }), { status: 200 });
-      GLOBAL.fetch = sinon.spy(() => Promise.resolve(response));
+      global.fetch = sinon.spy(() => Promise.resolve(response));
       const client = new Client();
       client.addPlugin(jwtPlugin);
       client.setJwtTokenGetter(() => falsyVal);
@@ -65,7 +65,7 @@ describe('jwt-plugin', () => {
 
   it('resolves with response on failure', () => {
     const response = new Response("{ body: 'content' }", { status: 401 });
-    GLOBAL.fetch = sinon.spy(() => Promise.resolve(response));
+    global.fetch = sinon.spy(() => Promise.resolve(response));
     const token = getToken({ exp: 1 });
     const request = new Request();
     const client = new Client();
@@ -79,7 +79,7 @@ describe('jwt-plugin', () => {
 
   it('emits AUTH_EXPIRED event if request 401s and token is expired', () => {
     const response = new Response("{ body: 'content' }", { status: 401 });
-    GLOBAL.fetch = sinon.spy(() => Promise.resolve(response));
+    global.fetch = sinon.spy(() => Promise.resolve(response));
     const token = getToken({ exp: 1 });
     const request = new Request();
     const client = new Client();
@@ -100,7 +100,7 @@ describe('jwt-plugin', () => {
 
   it('emits AUTH_FAILED event if request 401s but token is not expired', () => {
     const response = new Response("{ body: 'content' }", { status: 401 });
-    GLOBAL.fetch = sinon.spy(() => Promise.resolve(response));
+    global.fetch = sinon.spy(() => Promise.resolve(response));
     const token = getToken({ exp: (new Date().getTime() / 1000) + 1000 });
     const request = new Request();
     const client = new Client();
@@ -121,7 +121,7 @@ describe('jwt-plugin', () => {
 
   it('emits AUTH_FAILED event if request 401s and token is null', () => {
     const response = new Response("{ body: 'content' }", { status: 401 });
-    GLOBAL.fetch = sinon.spy(() => Promise.resolve(response));
+    global.fetch = sinon.spy(() => Promise.resolve(response));
     const token = null;
     const request = new Request();
     const client = new Client();
@@ -142,7 +142,7 @@ describe('jwt-plugin', () => {
 
   it('emits AUTH_FAILED event if request 401s and decoded token is invalid JSON', () => {
     const response = new Response("{ body: 'content' }", { status: 401 });
-    GLOBAL.fetch = sinon.spy(() => Promise.resolve(response));
+    global.fetch = sinon.spy(() => Promise.resolve(response));
     const token = 'foo';
     const request = new Request();
     const client = new Client();
@@ -163,7 +163,7 @@ describe('jwt-plugin', () => {
 
   it('does not emit either custom event if request fails with non-401', () => {
     const response = new Response("{ body: 'content' }", { status: 500 });
-    GLOBAL.fetch = sinon.spy(() => Promise.resolve(response));
+    global.fetch = sinon.spy(() => Promise.resolve(response));
     const token = getToken({ exp: (new Date().getTime() / 1000) + 1000 });
     const request = new Request();
     const client = new Client();

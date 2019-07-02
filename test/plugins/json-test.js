@@ -28,7 +28,7 @@ describe('json-plugin', () => {
           },
         }
       );
-      GLOBAL.fetch = sinon.spy(() => Promise.resolve(response));
+      global.fetch = sinon.spy(() => Promise.resolve(response));
       const client = new Client();
       client.addPlugin(jsonPlugin);
 
@@ -48,7 +48,7 @@ describe('json-plugin', () => {
           },
         }
       );
-      GLOBAL.fetch = sinon.spy(() => Promise.resolve(response));
+      global.fetch = sinon.spy(() => Promise.resolve(response));
       const client = new Client();
       client.addPlugin(jsonPlugin);
 
@@ -63,7 +63,7 @@ describe('json-plugin', () => {
         body,
         { status: 200 }
       );
-      GLOBAL.fetch = sinon.spy(() => Promise.resolve(response));
+      global.fetch = sinon.spy(() => Promise.resolve(response));
       const client = new Client();
       client.addPlugin(jsonPlugin);
 
