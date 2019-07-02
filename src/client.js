@@ -114,18 +114,18 @@ export default class Client {
         const response = await Promise.race([
           fetch(request),
           new Promise((_, reject) => setTimeout(
-            () => reject(new TimeoutError(options.timeout || this.defaults.timeout)),
-            options.timeout || this.defaults.timeout
+            () => reject(new TimeoutError((options && options.timeout) || this.defaults.timeout)),
+            (options && options.timeout) || this.defaults.timeout
           )),
         ]);
 
         let mutatedResponse = await this._callOnCompletes(request, response);
 
-        if (response.status >= 400) {
-          mutatedResponse = await this._callOnFails(request, response);
+        if (mutatedResponse.status >= 400) {
+          mutatedResponse = await this._callOnFails(request, mutatedResponse);
           this.eventEmitter.emit(events.REQUEST_FAILURE, request, mutatedResponse);
         } else {
-          mutatedResponse = await this._callOnSuccesses(request, response);
+          mutatedResponse = await this._callOnSuccesses(request, mutatedResponse);
           this.eventEmitter.emit(events.REQUEST_SUCCESS, request, mutatedResponse);
         }
 
