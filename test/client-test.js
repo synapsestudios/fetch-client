@@ -44,6 +44,40 @@ describe('client', () => {
       expect(fullPathWithoutUrl).to.equal('');
     });
 
+  describe('timeout', function() {
+    this.timeout(11000);
+
+    it('has a default timeout', () => {
+      global.fetch = sinon.spy(() => new Promise((resolve, reject) => setTimeout(reject, 15000)));
+      const myClient = new Client();
+      const promise = myClient.fetch('http://google.com/', { method: 'get' });
+      return expect(promise).to.be.rejected.then(error => {
+        expect(error.name).to.equal('TimeoutError');
+        expect(error.timeout).to.equal(10000);
+      });
+    });
+
+    it('should honor global timeout', () => {
+      global.fetch = sinon.spy(() => new Promise((resolve, reject) => setTimeout(reject, 15000)));
+      const myClient = new Client({ timeout: 1000 });
+      const promise = myClient.fetch('http://google.com/', { method: 'get' });
+      return expect(promise).to.be.rejected.then(error => {
+        expect(error.name).to.equal('TimeoutError');
+        expect(error.timeout).to.equal(1000);
+      });
+    });
+
+    it('should honor timeout override', () => {
+      global.fetch = sinon.spy(() => new Promise((resolve, reject) => setTimeout(reject, 15000)));
+      const myClient = new Client();
+      const promise = myClient.fetch('http://google.com/', { method: 'get', timeout: 1000 });
+      return expect(promise).to.be.rejected.then(error => {
+        expect(error.name).to.equal('TimeoutError');
+        expect(error.timeout).to.equal(1000);
+      });
+    });
+  });
+
   describe('events', () => {
     it('should emit starting event', () => {
       global.fetch = sinon.spy(() => Promise.resolve('test'));
