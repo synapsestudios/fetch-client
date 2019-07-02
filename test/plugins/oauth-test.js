@@ -124,7 +124,6 @@ describe('oauth-plugin', () => {
     const response200 = new Response(JSON.stringify({ body: 'content' }), { status: 200 });
     const response200ii = new Response(JSON.stringify({ body: 'content' }), { status: 200 });
     global.fetch = sinon.stub();
-    // Requests in quick succession both 401
     global.fetch.onCall(0).returns(
       new Promise((resolve) => setTimeout(() => resolve(response401), 1)),
     );
