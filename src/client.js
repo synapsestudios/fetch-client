@@ -115,8 +115,8 @@ export default class Client {
           fetch(request),
           new Promise((_, reject) => setTimeout(
             () => reject(new TimeoutError(options.timeout || this.defaults.timeout)),
-            options.timeout || this.defaults.timeout)
-          ),
+            options.timeout || this.defaults.timeout
+          )),
         ]);
 
         let mutatedResponse = await this._callOnCompletes(request, response);
