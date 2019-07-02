@@ -46,9 +46,9 @@ describe('client', () => {
 
   describe('timeout', function() {
     this.timeout(11000);
-    global.fetch = sinon.spy(() => new Promise((resolve, reject) => setTimeout(reject, 15000)));
 
     it('has a default timeout', () => {
+      global.fetch = sinon.spy(() => new Promise((resolve, reject) => setTimeout(reject, 15000)));
       const myClient = new Client();
       const promise = myClient.fetch('http://google.com/', { method: 'get' });
       return expect(promise).to.be.rejected.then(error => {
@@ -58,6 +58,7 @@ describe('client', () => {
     });
 
     it('should honor global timeout', () => {
+      global.fetch = sinon.spy(() => new Promise((resolve, reject) => setTimeout(reject, 15000)));
       const myClient = new Client({ timeout: 1000 });
       const promise = myClient.fetch('http://google.com/', { method: 'get' });
       return expect(promise).to.be.rejected.then(error => {
@@ -67,6 +68,7 @@ describe('client', () => {
     });
 
     it('should honor timeout override', () => {
+      global.fetch = sinon.spy(() => new Promise((resolve, reject) => setTimeout(reject, 15000)));
       const myClient = new Client();
       const promise = myClient.fetch('http://google.com/', { method: 'get', timeout: 1000 });
       return expect(promise).to.be.rejected.then(error => {
