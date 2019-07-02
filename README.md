@@ -148,10 +148,10 @@ The JWT plugin sets the JSON web token in the request's Authorization header and
 AUTH_EXPIRED or AUTH_FAILED events on 401 responses.
 
 ```
-import { jwtPlugin } from '@synapsestudios/fetch-client';
+import { JwtPlugin } from '@synapsestudios/fetch-client';
 import store2 from 'store2';
 
-myClient.addPlugin(jwtPlugin);
+myClient.addPlugin(new JwtPlugin());
 myClient.setJwtTokenGetter(() => (store2.get('token').token || {}).token);
 myClient.post('endpoint-that-requires-auth');
 ```
