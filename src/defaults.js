@@ -8,6 +8,7 @@ export const allowedEncodings = [
 
 export const defaults = {
   bracketStyleArrays: false,
+  timeout: 10000,
   queryStringifier(body) {
     const urlSearchParams = new URLSearchParams();
     this._encodeForm(body, urlSearchParams, true);
