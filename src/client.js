@@ -5,11 +5,11 @@ import merge from 'merge';
 import { defaults as _defaults, allowedEncodings } from './defaults';
 
 class TimeoutError extends Error {
-	constructor(timeout) {
-		super('Request timed out');
+  constructor(timeout) {
+    super('Request timed out');
     this.name = 'TimeoutError';
     this.timeout = timeout;
-	}
+  }
 }
 
 export default class Client {
