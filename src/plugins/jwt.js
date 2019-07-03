@@ -53,7 +53,6 @@ class JwtPlugin {
     }
     return response;
   }
-};
+}
 
 export default JwtPlugin;
-
