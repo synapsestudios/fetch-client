@@ -10,13 +10,13 @@ chai.use(chaiAsPromised);
 chai.use(sinonChai);
 
 import Client from '../../src/client';
-import jwtPluginOriginal from '../../src/plugins/jwt';
+import JwtPlugin from '../../src/plugins/jwt';
 import { AUTH_EXPIRED, AUTH_FAILED } from '../../src/events';
 
 // polyfills
 import { Request, Response } from 'whatwg-fetch';
-global.btoa = (str) => new Buffer(str, 'binary').toString('base64');
-global.atob = (str) => new Buffer(str, 'base64').toString('binary');
+global.btoa = (str) => Buffer.from(str, 'binary').toString('base64');
+global.atob = (str) => Buffer.from(str, 'base64').toString('binary');
 
 describe('jwt-plugin', () => {
   let jwtPlugin;
@@ -25,7 +25,7 @@ describe('jwt-plugin', () => {
 
   beforeEach(() => {
     global.fetch = null;
-    jwtPlugin = clone(jwtPluginOriginal);
+    jwtPlugin = new JwtPlugin();
   });
 
   it('throws error if getJwtToken without setting it first', () => {
