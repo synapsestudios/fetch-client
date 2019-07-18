@@ -160,4 +160,32 @@ describe('oauth-plugin', () => {
       expect(resolutions[1]).to.equal(response200);
     });
   });
+
+  it('does not concatenate headers when retrying the request', () => {
+    const client = new Client();
+    const oauthPlugin = clone(oauthPluginOriginal);
+    client.addPlugin(oauthPlugin);
+
+    const response401 = new Response(JSON.stringify({ body: 'content' }), { status: 401 });
+    const response200 = new Response(JSON.stringify({ body: 'content' }), { status: 200 });
+    global.fetch = sinon.stub();
+    global.fetch.onCall(0).returns(Promise.resolve(response401));
+    global.fetch.onCall(1).returns(Promise.resolve(response200));
+
+    const refreshResponse = new Response(JSON.stringify({}), { status: 200 });
+    oauthPlugin.helpers.refreshToken = () => Promise.resolve(refreshResponse);
+    client.setBearerTokenGetter(() => 'TOKEN');
+    client.setRefreshTokenGetter(() => 'REFRESH_TOKEN');
+    client.setUsedRefreshTokens([]);
+    client.setConfig({ refresh_path: '/refresh' });
+
+    client.setOnRefreshResponse(async ({ access_token, refresh_token, id_token }) => {
+      client.setBearerTokenGetter(() => 'NEW_TOKEN');
+    });
+
+    const request = new Request('/some/endpoint');
+    return client.post(request).then(response => {
+      expect(global.fetch.args[1][0].headers.get('authorization')).to.equal('Bearer NEW_TOKEN');
+    });
+  });
 });
