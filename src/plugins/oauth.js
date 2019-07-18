@@ -10,13 +10,13 @@ export default {
 
       await new Promise(resolve => {
         this.client.eventEmitter.once(TOKEN_REFRESHED, () => {
-          request.headers.append('Authorization', `Bearer ${this.client.getBearerToken()}`);
+          request.headers.set('Authorization', `Bearer ${this.client.getBearerToken()}`);
           resolve();
         });
         this.client.eventEmitter.once(TOKEN_REFRESH_FAILED, () => resolve());
       });
     } else {
-      request.headers.append('Authorization', `Bearer ${this.client.getBearerToken()}`);
+      request.headers.set('Authorization', `Bearer ${this.client.getBearerToken()}`);
     }
     return request;
   },
