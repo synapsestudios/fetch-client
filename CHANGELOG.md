@@ -1,5 +1,15 @@
 CHANGELOG
 =========
+## [v2.0.0](https://github.com/synapsestudios/fetch-client/compare/v1.1.3...v2.0.0) (2019-07-18)
+### Added
+- [#70](https://github.com/synapsestudios/fetch-client/issues/70) Update plugin interface to be async
+- [#98](https://github.com/synapsestudios/fetch-client/issues/70) Add timeout handling
+- [#64](https://github.com/synapsestudios/fetch-client/issues/64) jwtPlugin exports a function that returns a new plugin
+### Fixed
+- [#49](https://github.com/synapsestudios/fetch-client/issues/49) Calling helper methods without a path results in calls to `undefined`
+- [#75](https://github.com/synapsestudios/fetch-client/issues/75) get() helper doesn't pass default options through
+- [#102](https://github.com/synapsestudios/fetch-client/issues/102) oauth plugin: When retrying a request that failed due to a 401 headers are concatenated together
+
 ## [v1.1.3](https://github.com/synapsestudios/fetch-client/compare/v1.1.2...v1.1.3) (2019-05-08)
 * fixed bug where retried 401 request returns undefined
 
