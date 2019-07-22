@@ -16,7 +16,7 @@ import * as events from '../src/events';
 
 // polyfills
 import { Request, Response } from 'whatwg-fetch';
-GLOBAL.Request = Request;
+global.Request = Request;
 
 describe('client', () => {
   it('should not fail to instantiate', () => {
@@ -25,18 +25,62 @@ describe('client', () => {
 
   it('handles Request object in fetch call', () => {
     const myClient = new Client({});
-    GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+    global.fetch = sinon.spy(() => Promise.resolve('test'));
 
     const request = new Request();
-    myClient.fetch(request);
-    return expect(request.waitPromise).to.be.fulfilled.then(() => {
-      expect(GLOBAL.fetch).to.be.calledWith(request);
+    return myClient.fetch(request).then(() => expect(global.fetch).to.be.calledWith(request));
+  });
+
+  it(
+    'should convert falsy values to empty string when calling _getFullPath() without a path',
+    () => {
+      const myClientWithUrl = new Client({ url: 'http://something.com' });
+      const fullPathWithUrl = myClientWithUrl._getFullPath();
+
+      const myClientWithoutUrl = new Client();
+      const fullPathWithoutUrl = myClientWithoutUrl._getFullPath();
+
+      expect(fullPathWithUrl).to.equal('http://something.com/');
+      expect(fullPathWithoutUrl).to.equal('');
+    });
+
+  describe('timeout', function() {
+    this.timeout(11000);
+
+    it('has a default timeout', () => {
+      global.fetch = sinon.spy(() => new Promise((resolve, reject) => setTimeout(reject, 15000)));
+      const myClient = new Client();
+      const promise = myClient.fetch('http://google.com/', { method: 'get' });
+      return expect(promise).to.be.rejected.then(error => {
+        expect(error.name).to.equal('TimeoutError');
+        expect(error.timeout).to.equal(10000);
+      });
+    });
+
+    it('should honor global timeout', () => {
+      global.fetch = sinon.spy(() => new Promise((resolve, reject) => setTimeout(reject, 15000)));
+      const myClient = new Client({ timeout: 1000 });
+      const promise = myClient.fetch('http://google.com/', { method: 'get' });
+      return expect(promise).to.be.rejected.then(error => {
+        expect(error.name).to.equal('TimeoutError');
+        expect(error.timeout).to.equal(1000);
+      });
+    });
+
+    it('should honor timeout override', () => {
+      global.fetch = sinon.spy(() => new Promise((resolve, reject) => setTimeout(reject, 15000)));
+      const myClient = new Client();
+      const promise = myClient.fetch('http://google.com/', { method: 'get', timeout: 1000 });
+      return expect(promise).to.be.rejected.then(error => {
+        expect(error.name).to.equal('TimeoutError');
+        expect(error.timeout).to.equal(1000);
+      });
     });
   });
 
   describe('events', () => {
     it('should emit starting event', () => {
-      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      global.fetch = sinon.spy(() => Promise.resolve('test'));
 
       const myClient = new Client();
       const cb = sinon.spy();
@@ -51,7 +95,7 @@ describe('client', () => {
     });
 
     it('should emit success event', () => {
-      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      global.fetch = sinon.spy(() => Promise.resolve('test'));
 
       const myClient = new Client();
       const cb = sinon.spy();
@@ -70,7 +114,7 @@ describe('client', () => {
 
     it('should emit fail event', () => {
       const response = new Response(null, { status: 400, statusText: 'whatever 400' });
-      GLOBAL.fetch = sinon.spy(() => Promise.resolve(response));
+      global.fetch = sinon.spy(() => Promise.resolve(response));
 
       const myClient = new Client();
       const cb = sinon.spy();
@@ -88,7 +132,7 @@ describe('client', () => {
     });
 
     it('should emit error event', () => {
-      GLOBAL.fetch = sinon.spy(() => Promise.reject('test'));
+      global.fetch = sinon.spy(() => Promise.reject('test'));
 
       const myClient = new Client();
       const cb = sinon.spy();
@@ -116,11 +160,11 @@ describe('client', () => {
       const myClient = new Client({
         get: { headers: { 'X-TEST': 'FOO' } },
       });
-      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      global.fetch = sinon.spy(() => Promise.resolve('test'));
       myClient.get('path')
       .then(() => {
-          expect(GLOBAL.fetch).to.have.been.called;
-          expect(GLOBAL.fetch.args[0][0].headers.get('X-TEST')).to.equal('FOO');
+          expect(global.fetch).to.have.been.called;
+          expect(global.fetch.args[0][0].headers.get('X-TEST')).to.equal('FOO');
         });
     });
 
@@ -128,22 +172,22 @@ describe('client', () => {
       const myClient = new Client({
         get: { headers: { 'X-TEST': 'FOO' } },
       });
-      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      global.fetch = sinon.spy(() => Promise.resolve('test'));
       myClient.get('path', {}, { headers: { 'X-PASSED-IN': 'VALUE' } })
         .then(() => {
-          expect(GLOBAL.fetch).to.have.been.called;
-          expect(GLOBAL.fetch.args[0][0].headers.get('X-TEST')).to.equal('FOO');
-          expect(GLOBAL.fetch.args[0][0].headers.get('X-PASSED-IN')).to.equal('VALUE');
+          expect(global.fetch).to.have.been.called;
+          expect(global.fetch.args[0][0].headers.get('X-TEST')).to.equal('FOO');
+          expect(global.fetch.args[0][0].headers.get('X-PASSED-IN')).to.equal('VALUE');
         });
     });
 
     it('uses passed in headers if there are no defaults', () => {
       const myClient = new Client();
-      GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+      global.fetch = sinon.spy(() => Promise.resolve('test'));
       myClient.get('path', {}, { headers: { 'X-PASSED-IN': 'VALUE' } })
         .then(() => {
-          expect(GLOBAL.fetch).to.have.been.called;
-          expect(GLOBAL.fetch.args[0][0].headers.get('X-PASSED-IN')).to.equal('VALUE');
+          expect(global.fetch).to.have.been.called;
+          expect(global.fetch.args[0][0].headers.get('X-PASSED-IN')).to.equal('VALUE');
         });
     });
   });
@@ -181,7 +225,7 @@ describe('client', () => {
       });
 
       it('can emit custom events', () => {
-        GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+        global.fetch = sinon.spy(() => Promise.resolve('test'));
         const myClient = new Client();
         const cb = sinon.spy();
         myClient.on('custom_event', cb);
@@ -201,7 +245,7 @@ describe('client', () => {
       });
 
       it('can register helper methods on the client object', () => {
-        GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+        global.fetch = sinon.spy(() => Promise.resolve('test'));
         const myClient = new Client();
         const newMethod = sinon.spy();
 
@@ -217,7 +261,7 @@ describe('client', () => {
 
     describe('onStart functionality', () => {
       it('calls onStart', () => {
-        GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+        global.fetch = sinon.spy(() => Promise.resolve('test'));
         const myClient = new Client();
         const onStart = sinon.spy((request) => request);
         const myPlugin = { onStart };
@@ -230,7 +274,7 @@ describe('client', () => {
       });
 
       it('doesn\'t break when onStart is left out', () => {
-        GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+        global.fetch = sinon.spy(() => Promise.resolve('test'));
         const myClient = new Client();
         const myPlugin = { arbitrary: 'object' };
         myClient.addPlugin(myPlugin);
@@ -241,7 +285,7 @@ describe('client', () => {
 
       it('calls onStart with the previous onStart return value', () => {
         const onStart1ReturnValue = { test: 'test' };
-        GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+        global.fetch = sinon.spy(() => Promise.resolve('test'));
         const onStart1 = sinon.spy((request) => onStart1ReturnValue);
         const onStart2 = sinon.spy((request) => request);
 
@@ -249,12 +293,13 @@ describe('client', () => {
         myClient.addPlugin({ onStart: onStart1 });
         myClient.addPlugin({ onStart: onStart2 });
 
-        myClient.fetch();
-        expect(onStart2).to.have.been.calledWith(onStart1ReturnValue);
+        return myClient.fetch().then(() => {
+          expect(onStart2).to.have.been.calledWith(onStart1ReturnValue);
+        });
       });
 
       it('stops calling onStarts when false returned', () => {
-        GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+        global.fetch = sinon.spy(() => Promise.resolve('test'));
         const myClient = new Client();
 
         const onStart1 = sinon.spy(false);
@@ -269,17 +314,17 @@ describe('client', () => {
       });
 
       it('cancels the request when onStart returns false', () => {
-        GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+        global.fetch = sinon.spy(() => Promise.resolve('test'));
         const myClient = new Client();
         myClient.addPlugin({ onStart: () => false });
 
         const promise = myClient.fetch();
-        expect(GLOBAL.fetch).to.not.be.called;
+        expect(global.fetch).to.not.be.called;
         return expect(promise).to.be.rejected;
       });
 
       it('cancels the request when onStart throws an error', () => {
-        GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+        global.fetch = sinon.spy(() => Promise.resolve('test'));
         const myClient = new Client();
         myClient.addPlugin({
           onStart: () => {
@@ -288,17 +333,17 @@ describe('client', () => {
         });
 
         const promise = myClient.fetch();
-        expect(GLOBAL.fetch).to.not.be.called;
+        expect(global.fetch).to.not.be.called;
         return expect(promise).to.be.rejected;
       });
 
       it('rejects with a custom error object', () => {
-        GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+        global.fetch = sinon.spy(() => Promise.resolve('test'));
         const myClient = new Client();
         myClient.addPlugin({ onStart: () => false });
 
         const promise = myClient.fetch();
-        expect(GLOBAL.fetch).to.not.be.called;
+        expect(global.fetch).to.not.be.called;
         return expect(promise).to.be.rejected
           .then(err => {
             expect(err.name).to.equal('PluginError');
@@ -306,7 +351,7 @@ describe('client', () => {
       });
 
       it('calls multiple plugin in the order they were added', () => {
-        GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+        global.fetch = sinon.spy(() => Promise.resolve('test'));
         const onStart1 = sinon.spy((request) => request);
         const onStart2 = sinon.spy((request) => request);
         const onStart3 = sinon.spy((request) => request);
@@ -316,15 +361,16 @@ describe('client', () => {
         myClient.addPlugin({ onStart: onStart2 });
         myClient.addPlugin({ onStart: onStart3 });
 
-        myClient.fetch();
-        expect(onStart1).to.be.calledBefore(onStart2);
-        expect(onStart2).to.be.calledBefore(onStart3);
+        return myClient.fetch().then(() => {
+          expect(onStart1).to.be.calledBefore(onStart2);
+          expect(onStart2).to.be.calledBefore(onStart3);
+        });
       });
     });
 
     describe('onSuccess functionality', () => {
       it('calls onSuccess when a request succeeds', () => {
-        GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+        global.fetch = sinon.spy(() => Promise.resolve('test'));
         const myClient = new Client();
         const myPlugin = { onSuccess: sinon.spy() };
         myClient.addPlugin(myPlugin);
@@ -335,7 +381,7 @@ describe('client', () => {
       });
 
       it('passes request and response to onSuccess', () => {
-        GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+        global.fetch = sinon.spy(() => Promise.resolve('test'));
         const myClient = new Client();
         const myPlugin = { onSuccess: sinon.spy() };
         myClient.addPlugin(myPlugin);
@@ -347,7 +393,7 @@ describe('client', () => {
       });
 
       it('does not call onSuccess when a request fails', () => {
-        GLOBAL.fetch = sinon.spy(() => Promise.reject('test'));
+        global.fetch = sinon.spy(() => Promise.reject('test'));
         const myClient = new Client();
         const myPlugin = { onSuccess: sinon.spy(), onFail: sinon.spy() };
         myClient.addPlugin(myPlugin);
@@ -371,7 +417,7 @@ describe('client', () => {
       const response = responses[i];
       describe(`${method} functionality`, () => {
         it(`calls ${method} when a request fails`, () => {
-          GLOBAL.fetch = sinon.spy(() => response);
+          global.fetch = sinon.spy(() => response);
           const myClient = new Client();
           const myPlugin = {};
           myPlugin[method] = sinon.spy();
@@ -383,7 +429,7 @@ describe('client', () => {
         });
 
         it(`passes request and error to ${plugins[i]}`, () => {
-          GLOBAL.fetch = sinon.spy(() => response);
+          global.fetch = sinon.spy(() => response);
           const myClient = new Client();
           const myPlugin = {};
           myPlugin[method] = sinon.spy();
@@ -396,7 +442,7 @@ describe('client', () => {
         });
 
         it(`does not call ${plugins[i]} when a request succeeds`, () => {
-          GLOBAL.fetch = sinon.spy(() => Promise.resolve('test'));
+          global.fetch = sinon.spy(() => Promise.resolve('test'));
           const myClient = new Client();
           const myPlugin = { onSuccess: sinon.spy() };
           myPlugin[method] = sinon.spy();

@@ -45,6 +45,7 @@ Configuration defaults can be provided when instantiating the client object. The
 
 ```
 var defaults = {
+  timeout: // integer value for timeout
   encoding: 'json',
   get: {
     // default fetch options for GET requests
@@ -71,6 +72,12 @@ The `encoding` property in the defaults object determines how the http request h
   - 'form-data' - Encodes body as FormData object. Lets fetch determine 'Content-Type' ('multipart/form-data')
   - 'x-www-form-urlencoded' - Encodes body as URLSearchParams. Lets fetch determine 'Content-Type' ('application/x-www-form-urlencoded')
   - false - does nothing to body, does nothing to 'Content-Type'
+
+### Timeout
+
+By default fetch-client has a 10 second request time out. You can override that default with your own value when you instantiate the client (`const myClient = new Client({ timeout: 30000 })`) or in the `options` object on individual requests ( `client.get('path', { timeout: 50000 })` )
+
+If a request is exceeds the timeout time then the promise with be rejected with a `TimeoutError`. It's important to note that fetch requests can not be aborted, so just because your request timed out and the promise was rejected you should not assume that the request is not still pending.
 
 ### Events
 
@@ -107,13 +114,13 @@ myClient.get('coolthings')
 
 ### Plugins
 
-Our plugin implementation allows you to register objects with methods that will trigger during request lifecycle. Plugins are more robust than event callbacks because they have access to the event emitter, they are allowed to alter the Response object, and they can register their own helper methods on your client object.
+Our plugin implementation allows you to register objects with async methods that will trigger during request lifecycle. Plugins are more robust than event callbacks because they have access to the event emitter, they are allowed to alter the Response object, and they can register their own helper methods on your client object. You can also return a Promise which will be resolved before the request lifecycle continues.
 
 The most basic implementation of a plugin looks like this
 
 ```
 var myPlugin = {
-  onStart: function(request) {
+  onStart: async function(request) {
     return request;
   }
 }
@@ -141,10 +148,10 @@ The JWT plugin sets the JSON web token in the request's Authorization header and
 AUTH_EXPIRED or AUTH_FAILED events on 401 responses.
 
 ```
-import { jwtPlugin } from '@synapsestudios/fetch-client';
+import { JwtPlugin } from '@synapsestudios/fetch-client';
 import store2 from 'store2';
 
-myClient.addPlugin(jwtPlugin);
+myClient.addPlugin(new JwtPlugin());
 myClient.setJwtTokenGetter(() => (store2.get('token').token || {}).token);
 myClient.post('endpoint-that-requires-auth');
 ```

@@ -27,6 +27,7 @@ build/Release
 
 # Dependency directory
 node_modules
+package-lock.json
 
 # Optional cache directory
 .npm
@@ -40,3 +41,6 @@ _vimrc_local.vim
 
 # Shippable files
 shippable/
+
+# package-lock.json should not be committed to library
+package-lock.json

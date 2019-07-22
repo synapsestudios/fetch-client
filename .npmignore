@@ -1,6 +1,7 @@
 src
 test
 .babelrc
+package-lock.json
 
 npm-debug.log*
 _vimrc_local.vim

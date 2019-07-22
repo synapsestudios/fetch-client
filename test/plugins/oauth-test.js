@@ -17,7 +17,7 @@ import { Request, Response } from 'whatwg-fetch';
 
 describe('oauth-plugin', () => {
   beforeEach(() => {
-    GLOBAL.fetch = null;
+    global.fetch = null;
   });
 
   it('does not get stuck in an infinite loop when refreshToken fails', () => {
@@ -26,7 +26,7 @@ describe('oauth-plugin', () => {
     client.addPlugin(oauthPlugin);
 
     const response401 = new Response(JSON.stringify({ body: 'content' }), { status: 401 });
-    GLOBAL.fetch = sinon.spy(() => Promise.resolve(response401));
+    global.fetch = sinon.spy(() => Promise.resolve(response401));
 
     const failedRefreshResponse = new Response('', { status: 400 });
     oauthPlugin.helpers.refreshToken = () => Promise.resolve(failedRefreshResponse);
@@ -37,7 +37,7 @@ describe('oauth-plugin', () => {
 
     const request = new Request('/some/endpoint');
     return client.post(request).then(() => {
-      expect(GLOBAL.fetch).to.be.calledOnce;
+      expect(global.fetch).to.be.calledOnce;
     });
   });
 
@@ -48,9 +48,9 @@ describe('oauth-plugin', () => {
 
     const response401 = new Response(JSON.stringify({ body: 'content' }), { status: 401 });
     const response200 = new Response(JSON.stringify({ body: 'content' }), { status: 200 });
-    GLOBAL.fetch = sinon.stub();
-    GLOBAL.fetch.onCall(0).returns(Promise.resolve(response401));
-    GLOBAL.fetch.onCall(1).returns(Promise.resolve(response200));
+    global.fetch = sinon.stub();
+    global.fetch.onCall(0).returns(Promise.resolve(response401));
+    global.fetch.onCall(1).returns(Promise.resolve(response200));
 
     const refreshResponse = new Response(JSON.stringify({}), { status: 200 });
     oauthPlugin.helpers.refreshToken = () => Promise.resolve(refreshResponse);
@@ -62,9 +62,10 @@ describe('oauth-plugin', () => {
     client.setConfig({ refresh_path: '/refresh' });
 
     const request = new Request('/some/endpoint');
-    return client.post(request).then(() => {
-      expect(GLOBAL.fetch).to.be.calledTwice;
+    return client.post(request).then(response => {
+      expect(global.fetch).to.be.calledTwice;
       expect(refreshCallback).to.be.calledOnce;
+      expect(response).to.equal(response200);
     });
   });
 
@@ -76,19 +77,19 @@ describe('oauth-plugin', () => {
     const response401i = new Response(JSON.stringify({ body: 'content' }), { status: 401 });
     const response401ii = new Response(JSON.stringify({ body: 'content' }), { status: 401 });
     const response200 = new Response(JSON.stringify({ body: 'content' }), { status: 200 });
-    GLOBAL.fetch = sinon.stub();
+    global.fetch = sinon.stub();
     // Both initial requests 401
-    GLOBAL.fetch.onCall(0).returns(
+    global.fetch.onCall(0).returns(
       new Promise((resolve) => setTimeout(() => resolve(response401i), 25)),
     );
-    GLOBAL.fetch.onCall(1).returns(
+    global.fetch.onCall(1).returns(
       new Promise((resolve) => setTimeout(() => resolve(response401ii), 50)),
     );
     // On retry, they succeed
-    GLOBAL.fetch.onCall(2).returns(
+    global.fetch.onCall(2).returns(
       new Promise((resolve) => setTimeout(() => resolve(response200), 25)),
     );
-    GLOBAL.fetch.onCall(3).returns(
+    global.fetch.onCall(3).returns(
       new Promise((resolve) => setTimeout(() => resolve(response200), 25)),
     );
 
@@ -109,7 +110,7 @@ describe('oauth-plugin', () => {
       client.post(request),
       client.post(request2),
     ]).then(() => {
-      expect(GLOBAL.fetch.callCount).to.equal(4);
+      expect(global.fetch.callCount).to.equal(4);
       expect(oauthPlugin.helpers.refreshToken).to.be.calledOnce;
     });
   });
@@ -122,16 +123,15 @@ describe('oauth-plugin', () => {
     const response401 = new Response(JSON.stringify({ body: 'content' }), { status: 401 });
     const response200 = new Response(JSON.stringify({ body: 'content' }), { status: 200 });
     const response200ii = new Response(JSON.stringify({ body: 'content' }), { status: 200 });
-    GLOBAL.fetch = sinon.stub();
-    // Requests in quick succession both 401
-    GLOBAL.fetch.onCall(0).returns(
+    global.fetch = sinon.stub();
+    global.fetch.onCall(0).returns(
       new Promise((resolve) => setTimeout(() => resolve(response401), 1)),
     );
     // The second request won't be attempted while refreshing
-    GLOBAL.fetch.onCall(1).returns(
+    global.fetch.onCall(1).returns(
       new Promise((resolve) => setTimeout(() => resolve(response200), 1)),
     );
-    GLOBAL.fetch.onCall(2).returns(
+    global.fetch.onCall(2).returns(
       new Promise((resolve) => setTimeout(() => resolve(response200ii), 250)),
     );
 
@@ -153,11 +153,39 @@ describe('oauth-plugin', () => {
       // Second request 5 ms later
       new Promise(resolve => setTimeout(() => resolve(client.post(request2)), 5)),
     ]).then((resolutions) => {
-      expect(GLOBAL.fetch.callCount).to.equal(3);
+      expect(global.fetch.callCount).to.equal(3);
       expect(oauthPlugin.helpers.refreshToken).to.be.calledOnce;
       // requests resolve to the response object
       expect(resolutions[0]).to.equal(response200ii); // Not sure why this one is first but it's fine
       expect(resolutions[1]).to.equal(response200);
+    });
+  });
+
+  it('does not concatenate headers when retrying the request', () => {
+    const client = new Client();
+    const oauthPlugin = clone(oauthPluginOriginal);
+    client.addPlugin(oauthPlugin);
+
+    const response401 = new Response(JSON.stringify({ body: 'content' }), { status: 401 });
+    const response200 = new Response(JSON.stringify({ body: 'content' }), { status: 200 });
+    global.fetch = sinon.stub();
+    global.fetch.onCall(0).returns(Promise.resolve(response401));
+    global.fetch.onCall(1).returns(Promise.resolve(response200));
+
+    const refreshResponse = new Response(JSON.stringify({}), { status: 200 });
+    oauthPlugin.helpers.refreshToken = () => Promise.resolve(refreshResponse);
+    client.setBearerTokenGetter(() => 'TOKEN');
+    client.setRefreshTokenGetter(() => 'REFRESH_TOKEN');
+    client.setUsedRefreshTokens([]);
+    client.setConfig({ refresh_path: '/refresh' });
+
+    client.setOnRefreshResponse(async ({ access_token, refresh_token, id_token }) => {
+      client.setBearerTokenGetter(() => 'NEW_TOKEN');
+    });
+
+    const request = new Request('/some/endpoint');
+    return client.post(request).then(response => {
+      expect(global.fetch.args[1][0].headers.get('authorization')).to.equal('Bearer NEW_TOKEN');
     });
   });
 });

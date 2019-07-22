@@ -1,27 +1,36 @@
 import qs from 'querystring';
+
 const TOKEN_REFRESHED = 'TOKEN_REFRESHED';
 const TOKEN_REFRESH_FAILED = 'TOKEN_REFRESH_FAILED';
 
 export default {
-  onStart(request) {
+  async onStart(request) {
     if (this.client.refreshing) {
       request.secondTry = true;
-      request.waitPromise = new Promise(resolve => {
+
+      await new Promise(resolve => {
         this.client.eventEmitter.once(TOKEN_REFRESHED, () => {
-          request.headers.append('Authorization', `Bearer ${this.client.getBearerToken()}`);
+          request.headers.set('Authorization', `Bearer ${this.client.getBearerToken()}`);
           resolve();
         });
         this.client.eventEmitter.once(TOKEN_REFRESH_FAILED, () => resolve());
       });
     } else {
-      request.headers.append('Authorization', `Bearer ${this.client.getBearerToken()}`);
+      request.headers.set('Authorization', `Bearer ${this.client.getBearerToken()}`);
     }
     return request;
   },
 
-  onComplete(request, response) {
+  async onComplete(request, response) {
     const usedRefreshTokens = this.client.usedRefreshTokens;
     const currentRefreshToken = this.client.getRefreshToken();
+
+    if (this.client.refreshing) {
+      const refreshResponse = await this.client.refreshPromise;
+      if (refreshResponse.status === 200) {
+        return this.client.fetch(request);
+      }
+    }
 
     if (
       !this.client.refreshing &&
@@ -29,26 +38,26 @@ export default {
       !usedRefreshTokens.includes(currentRefreshToken)
     ) {
       this.client.refreshing = true;
-      this.client.refreshRequestPromise = response.doOver = this.helpers.refreshToken(
+
+      this.client.refreshPromise = this.helpers.refreshToken(
         this.client.oauthConfig,
-        this.client.getRefreshToken,
-      )
-        .then(res => {
-          this.client.refreshing = false;
-          this.client.refreshRequestPromise = null;
-          if (res.status === 200) {
-            this.client.usedRefreshTokens.push(currentRefreshToken);
-            this.client.eventEmitter.emit(TOKEN_REFRESHED);
-            return res.json().then(tokenRefreshResponse =>
-              this.client.onRefreshResponse(tokenRefreshResponse).then(() => true)
-            );
-          }
-          this.client.eventEmitter.emit(TOKEN_REFRESH_FAILED);
-          return false;
-        });
-    } else if (this.client.refreshing) {
-      response.doOver = this.client.refreshRequestPromise;
+        this.client.getRefreshToken
+      );
+
+      const refreshResponse = await this.client.refreshPromise;
+
+      this.client.refreshing = false;
+
+      if (refreshResponse.status === 200) {
+        this.client.usedRefreshTokens.push(currentRefreshToken);
+        this.client.eventEmitter.emit(TOKEN_REFRESHED);
+        const tokenRefreshResponseBody = await refreshResponse.json();
+        await this.client.onRefreshResponse(tokenRefreshResponseBody);
+        return this.client.fetch(request);
+      }
+      this.client.eventEmitter.emit(TOKEN_REFRESH_FAILED);
     }
+
     return response;
   },
 
