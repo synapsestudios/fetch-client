@@ -83,7 +83,7 @@ describe('oauth-plugin', () => {
       new Promise((resolve) => setTimeout(() => resolve(response401i), 25)),
     );
     global.fetch.onCall(1).returns(
-      new Promise((resolve) => setTimeout(() => resolve(response401ii), 80)),
+      new Promise((resolve) => setTimeout(() => resolve(response401ii), 50)),
     );
     // On retry, they succeed
     global.fetch.onCall(2).returns(
@@ -96,7 +96,10 @@ describe('oauth-plugin', () => {
     let refreshTokenIndex = 1;
     const refreshResponse = new Response(JSON.stringify({}), { status: 200 });
     oauthPlugin.helpers.refreshToken = sinon.spy(
-      () => new Promise(resolve => setTimeout(() => resolve(refreshResponse), 50))
+      () => new Promise(resolve => setTimeout(
+          () => resolve(new Response(JSON.stringify({}), { status: 200 })),
+          50
+      ))
     );
     client.setBearerTokenGetter(() => 'TOKEN');
     client.setRefreshTokenGetter(() => `REFRESH_TOKEN_${refreshTokenIndex}`);
