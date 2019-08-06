@@ -28,7 +28,7 @@ export default {
     if (this.client.refreshing) {
       const refreshResponse = await this.client.refreshPromise;
       if (refreshResponse.status === 200) {
-        return this.client.fetch(request);
+        return this.client.fetch(clonedRequest);
       }
     }
 
