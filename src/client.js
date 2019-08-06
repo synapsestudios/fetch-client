@@ -59,8 +59,8 @@ export default class Client {
     return this._callPluginMethod('onSuccess', 1, false, request, response);
   }
 
-  _callOnCompletes(request, response) {
-    return this._callPluginMethod('onComplete', 1, false, request, response);
+  _callOnCompletes(request, response, clonedRequest) {
+    return this._callPluginMethod('onComplete', 1, false, request, response, clonedRequest);
   }
 
   _callOnFails(request, response) {
@@ -103,6 +103,7 @@ export default class Client {
     }
 
     this.eventEmitter.emit(events.REQUEST_START, request);
+    const clonedRequest = request.clone();
     try {
       request = await this._callOnStarts(request);
     } catch (err) {
@@ -119,7 +120,7 @@ export default class Client {
           )),
         ]);
 
-        let mutatedResponse = await this._callOnCompletes(request, response);
+        let mutatedResponse = await this._callOnCompletes(request, response, clonedRequest);
 
         if (mutatedResponse.status >= 400) {
           mutatedResponse = await this._callOnFails(request, mutatedResponse);
