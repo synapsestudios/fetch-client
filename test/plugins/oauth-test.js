@@ -188,4 +188,56 @@ describe('oauth-plugin', () => {
       expect(global.fetch.args[1][0].headers.get('authorization')).to.equal('Bearer NEW_TOKEN');
     });
   });
+
+  it('does not reuse request objects', async () => {
+    const client = new Client();
+    const oauthPlugin = clone(oauthPluginOriginal);
+    client.addPlugin(oauthPlugin);
+
+    const body = JSON.stringify({hi: "there"});
+    const request = new Request('/some/endpoint', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body
+    });
+
+    global.fetch = sinon.stub();
+    const response401 = new Response(JSON.stringify({ body: 'content' }), { status: 401 });
+    global.fetch.onCall(0).returns(Promise.resolve(response401));
+
+    const response200 = new Response(JSON.stringify({ body: 'content' }), { status: 200 });
+    global.fetch.onCall(1).returns(Promise.resolve(response200));
+
+    const refreshResponse = new Response(JSON.stringify({}), { status: 200 });
+    oauthPlugin.helpers.refreshToken = () => Promise.resolve(refreshResponse);
+
+    client.setBearerTokenGetter(() => 'TOKEN');
+    client.setRefreshTokenGetter(() => 'REFRESH_TOKEN');
+    client.setUsedRefreshTokens([]);
+    client.setConfig({ refresh_path: '/refresh' });
+    client.setOnRefreshResponse(async ({ access_token, refresh_token, id_token }) => {
+      client.setBearerTokenGetter(() => 'NEW_TOKEN');
+    });
+
+    return client.post(request).then(response => {
+      const newRequest = global.fetch.args[1][0];
+      expect(newRequest).to.not.equal(request);
+      expect(newRequest.url).to.equal(request.url);
+      expect(newRequest.method).to.equal(request.method);
+      expect(newRequest.referrer).to.equal(request.referrer);
+      expect(newRequest.referrerPolicy).to.equal(request.referrerPolicy);
+      expect(newRequest.mode).to.equal(request.mode);
+      expect(newRequest.credentials).to.equal(request.credentials);
+      expect(newRequest.cache).to.equal(request.cache);
+      expect(newRequest.redirect).to.equal(request.redirect);
+      expect(newRequest.integrity).to.equal(request.integrity);
+      expect(newRequest.headers.get('content-type')).to.equal('application/json');
+      expect(newRequest.bodyUsed).to.be.false;
+
+      return newRequest.json();
+    })
+      .then(newBody => {
+        expect(JSON.stringify(newBody)).to.equal(body);
+      });
+  });
 });
