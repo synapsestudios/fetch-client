@@ -21,14 +21,14 @@ export default {
     return request;
   },
 
-  async onComplete(request, response) {
+  async onComplete(request, response, clonedRequest) {
     const usedRefreshTokens = this.client.usedRefreshTokens;
     const currentRefreshToken = this.client.getRefreshToken();
 
     if (this.client.refreshing) {
       const refreshResponse = await this.client.refreshPromise;
       if (refreshResponse.status === 200) {
-        return this.client.fetch(request);
+        return this.client.fetch(clonedRequest);
       }
     }
 
@@ -53,7 +53,7 @@ export default {
         this.client.eventEmitter.emit(TOKEN_REFRESHED);
         const tokenRefreshResponseBody = await refreshResponse.json();
         await this.client.onRefreshResponse(tokenRefreshResponseBody);
-        return this.client.fetch(request);
+        return this.client.fetch(clonedRequest);
       }
       this.client.eventEmitter.emit(TOKEN_REFRESH_FAILED);
     }
