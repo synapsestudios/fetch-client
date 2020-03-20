@@ -112,8 +112,9 @@ export default class Client {
 
     if (request && !onStartError) {
       try {
+        request = request instanceof Request ? request : new Request(request);
         const response = await Promise.race([
-          fetch(request),
+          fetch(request.clone()),
           new Promise((_, reject) => setTimeout(
             () => reject(new TimeoutError((options && options.timeout) || this.defaults.timeout)),
             (options && options.timeout) || this.defaults.timeout
