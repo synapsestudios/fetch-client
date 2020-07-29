@@ -1,0 +1,34 @@
+# Javascript Node CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-javascript/ for more details
+#
+version: 2
+jobs:
+  Build:
+    docker:
+      - image: circleci/node:10
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "fetch-client/package.json" }}
+      - run:
+          name: NPM Install
+          command: yarn install
+          working_directory: fetch-client
+      - run:
+          name: prettier
+          command: npm run prettier --quiet
+          working_directory: fetch-client
+      - run:
+          name: test
+          command: npm run test
+          working_directory: fetch-client
+      - save_cache:
+          key: dependency-cache-{{ checksum "fetch-client/package.json" }}
+          paths:
+            - fetch-client/node_modules
+workflows:
+  version: 2
+  Build:
+    jobs:
+      - Build
