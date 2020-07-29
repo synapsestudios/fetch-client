@@ -15,7 +15,7 @@
     "build:watch": "npm run build -- --watch",
     "lint": "eslint src",
     "prepublishOnly": "npm run lint && npm test && npm run build",
-    "prettier": "prettier ."
+    "prettier": "prettier --write ."
   },
   "repository": {
     "type": "git",

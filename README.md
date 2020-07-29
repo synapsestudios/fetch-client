@@ -15,6 +15,7 @@ Note: fetch-client assumes that `fetch` and `URLSearchParams` are available and 
 ## Usage
 
 By default fetch-client assumes you're consuming json apis and will set `Content-Type` and `Accept` headers to 'application/json' for you.
+
 ```
 var Client = require('@synapsestudios/fetch-client');
 
@@ -29,16 +30,18 @@ myClient.get('coolthings') // performs GET request to http://my-api.com/coolthin
 ### Client Methods
 
 The client object provides these methods for making requests:
-  - fetch(path, body, options) - wraps fetch and passes body options into the fetch call. Provides event/plugin features.
-  - get(path, body, options)
-  - post(path, body, options)
-  - put(path, body, options)
-  - patch(path, body, options)
-  - delete(path, options)
+
+- fetch(path, body, options) - wraps fetch and passes body options into the fetch call. Provides event/plugin features.
+- get(path, body, options)
+- post(path, body, options)
+- put(path, body, options)
+- patch(path, body, options)
+- delete(path, options)
 
 The get, post, put, patch and delete helper methods are shortcuts that set the HTTP method and also will encode the body appropriately. Your body will be left alone or encoded as json, FormData or URLSearchParams depending on the 'Content-Type' header and the 'encoding' value set in your client's [defaults](#defaults). The options argument is passed directly on to the `fetch` call and is where you set any custom headers and other request options. See <https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch> and <https://github.com/github/fetch> for more information on how to use fetch options.
 
 ### Defaults
+
 Configuration defaults can be provided when instantiating the client object. These defaults are used by the get, post, put, patch and delete helper methods to set default options on the request as well as defining a default encoding. By defining a default encoding value the client will be able to determine how (or whether) to modify the `body` argument in helper methods.
 
 ```
@@ -64,12 +67,14 @@ var defaults = {
 ```
 
 #### Encoding
+
 The `encoding` property in the defaults object determines how the http request helper methods attempt to encode the body of the request. Valid values are:
-  - 'json' - Runs the body through `JSON.stringify()`. Sets 'Content-Type' to 'application/json'
-  - 'text' - Does nothing to the body. Sets 'Content-Type' to 'text/plain'
-  - 'form-data' - Encodes body as FormData object. Lets fetch determine 'Content-Type' ('multipart/form-data')
-  - 'x-www-form-urlencoded' - Encodes body as URLSearchParams. Lets fetch determine 'Content-Type' ('application/x-www-form-urlencoded')
-  - false - does nothing to body, does nothing to 'Content-Type'
+
+- 'json' - Runs the body through `JSON.stringify()`. Sets 'Content-Type' to 'application/json'
+- 'text' - Does nothing to the body. Sets 'Content-Type' to 'text/plain'
+- 'form-data' - Encodes body as FormData object. Lets fetch determine 'Content-Type' ('multipart/form-data')
+- 'x-www-form-urlencoded' - Encodes body as URLSearchParams. Lets fetch determine 'Content-Type' ('application/x-www-form-urlencoded')
+- false - does nothing to body, does nothing to 'Content-Type'
 
 ### Timeout
 
@@ -127,6 +132,7 @@ myClient.addPlugin(myPlugin);
 ```
 
 #### Plugin Methods
+
 Plugin methods correspond to events and fire under the same conditions with the same arguments.
 
 | Method Name | Trigger Condition                                           | Args              |
@@ -171,6 +177,7 @@ myClient.post('endpoint').then(response => {
 ```
 
 #### Aborting the request with onStart()
+
 If your plugin's `onStart` method returns false or throws an error then the request will be aborted and the promise will be rejected.
 
 ```
@@ -191,6 +198,7 @@ myClient.get('coolthings')
 ```
 
 #### Altering the response with onSuccess() and onFail()
+
 ```
 class JsonResponsePlugin {
   function onSuccess(request, response) {
@@ -203,7 +211,9 @@ myClient.get('coolthings').then(json => {
   // we have json now!
 });
 ```
+
 #### Triggering Custom Events
+
 ```
 class MyPlugin {
   function onStart(request) {
@@ -226,6 +236,7 @@ myClient.get('coolthings').then(response => {
 ```
 
 #### Removing plugins
+
 By adding a name to your plugin object you can then reference it and remove it. Naming plugins is only required if you wish to use this feature to remove plugins.
 
 ```

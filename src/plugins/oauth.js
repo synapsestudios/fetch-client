@@ -8,15 +8,21 @@ export default {
     if (this.client.refreshing) {
       request.secondTry = true;
 
-      await new Promise(resolve => {
+      await new Promise((resolve) => {
         this.client.eventEmitter.once(TOKEN_REFRESHED, () => {
-          request.headers.set('Authorization', `Bearer ${this.client.getBearerToken()}`);
+          request.headers.set(
+            'Authorization',
+            `Bearer ${this.client.getBearerToken()}`
+          );
           resolve();
         });
         this.client.eventEmitter.once(TOKEN_REFRESH_FAILED, () => resolve());
       });
     } else {
-      request.headers.set('Authorization', `Bearer ${this.client.getBearerToken()}`);
+      request.headers.set(
+        'Authorization',
+        `Bearer ${this.client.getBearerToken()}`
+      );
     }
     return request;
   },

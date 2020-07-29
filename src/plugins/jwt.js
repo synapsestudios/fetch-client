@@ -9,7 +9,7 @@ const isExpired = (token) => {
 
     const decodedPayload = JSON.parse(atob(tokenPayload));
 
-    if (decodedPayload.exp < (new Date().getTime() / 1000)) {
+    if (decodedPayload.exp < new Date().getTime() / 1000) {
       return true;
     }
   } catch (error) {

@@ -21,7 +21,8 @@ global.atob = (str) => Buffer.from(str, 'base64').toString('binary');
 describe('jwt-plugin', () => {
   let jwtPlugin;
 
-  const getToken = (payload) => `${btoa('{}')}.${btoa(JSON.stringify(payload))}.${btoa('{}')}`;
+  const getToken = (payload) =>
+    `${btoa('{}')}.${btoa(JSON.stringify(payload))}.${btoa('{}')}`;
 
   beforeEach(() => {
     global.fetch = null;
@@ -48,9 +49,11 @@ describe('jwt-plugin', () => {
     expect(request.headers.get('Authorization')).to.equal(token);
   });
 
-  [false, null, undefined].forEach(falsyVal => {
+  [false, null, undefined].forEach((falsyVal) => {
     it(`does not include Authorization header if getJwtToken returns ${falsyVal}`, () => {
-      const response = new Response(JSON.stringify({ body: 'content' }), { status: 200 });
+      const response = new Response(JSON.stringify({ body: 'content' }), {
+        status: 200,
+      });
       global.fetch = sinon.spy(() => Promise.resolve(response));
       const client = new Client();
       client.addPlugin(jwtPlugin);
@@ -72,7 +75,7 @@ describe('jwt-plugin', () => {
     client.addPlugin(jwtPlugin);
     client.setJwtTokenGetter(() => token);
 
-    return expect(client.post(request)).to.be.fulfilled.then(resolution => {
+    return expect(client.post(request)).to.be.fulfilled.then((resolution) => {
       expect(resolution).to.equal(response);
     });
   });
@@ -101,7 +104,7 @@ describe('jwt-plugin', () => {
   it('emits AUTH_FAILED event if request 401s but token is not expired', () => {
     const response = new Response("{ body: 'content' }", { status: 401 });
     global.fetch = sinon.spy(() => Promise.resolve(response));
-    const token = getToken({ exp: (new Date().getTime() / 1000) + 1000 });
+    const token = getToken({ exp: new Date().getTime() / 1000 + 1000 });
     const request = new Request();
     const client = new Client();
     const failedSpy = sinon.spy();
@@ -164,7 +167,7 @@ describe('jwt-plugin', () => {
   it('does not emit either custom event if request fails with non-401', () => {
     const response = new Response("{ body: 'content' }", { status: 500 });
     global.fetch = sinon.spy(() => Promise.resolve(response));
-    const token = getToken({ exp: (new Date().getTime() / 1000) + 1000 });
+    const token = getToken({ exp: new Date().getTime() / 1000 + 1000 });
     const request = new Request();
     const client = new Client();
     const failedSpy = sinon.spy();
