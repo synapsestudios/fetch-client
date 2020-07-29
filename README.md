@@ -1,8 +1,8 @@
 # fetch-client
 
-Wrapper for fetch that adds shortcuts, plugins and events. This is written and maintained by the fine folks at [Synapse Studios](http://www.synapsestudios.com). Our goal is to maintain the fetch api while adding in sensible defaults and hooks to request lifecycle events.
+Wrapper for fetch that adds shortcuts and plugins. This is written and maintained by the fine folks at [Synapse Studios](http://www.synapsestudios.com). Our goal is to maintain the fetch api while adding in sensible defaults.
 
-This library is inspired by libraries like [Fetch+](https://github.com/RickWong/fetch-plus) and [http-client](https://github.com/mjackson/http-client). There are differences in the details of how our plugins and events work.
+This library is inspired by libraries like [Fetch+](https://github.com/RickWong/fetch-plus) and [http-client](https://github.com/mjackson/http-client). There are differences in the details of how our plugins work.
 
 ## Installation
 
@@ -31,7 +31,7 @@ myClient.get('coolthings') // performs GET request to http://my-api.com/coolthin
 
 The client object provides these methods for making requests:
 
-- fetch(path, body, options) - wraps fetch and passes body options into the fetch call. Provides event/plugin features.
+- fetch(path, body, options) - wraps fetch and passes body options into the fetch call. Provides plugin features.
 - get(path, body, options)
 - post(path, body, options)
 - put(path, body, options)
@@ -82,17 +82,6 @@ By default fetch-client has a 10 second request time out. You can override that 
 
 If a request is exceeds the timeout time then the promise with be rejected with a `TimeoutError`. It's important to note that fetch requests can not be aborted, so just because your request timed out and the promise was rejected you should not assume that the request is not still pending.
 
-### Events
-
-Client objects will fire lifecycle events that your app can respond to.
-
-| Event Name      | Trigger Condition                                           | Args              |
-| --------------- | ----------------------------------------------------------- | ----------------- |
-| REQUEST_START   | Fires for every request before the request is even started. | Request           |
-| REQUEST_SUCCESS | Fires when a request returns an http status < 400           | Request, Response |
-| REQUEST_FAIL    | Fires when a request returns an http status >= 400          | Request, Response |
-| REQUEST_ERROR   | Fires when a request errors out. Server timeouts, etc       | Request, err      |
-
 #### Example
 
 ```
@@ -117,7 +106,7 @@ myClient.get('coolthings')
 
 ### Plugins
 
-Our plugin implementation allows you to register objects with async methods that will trigger during request lifecycle. Plugins are more robust than event callbacks because they have access to the event emitter, they are allowed to alter the Response object, and they can register their own helper methods on your client object. You can also return a Promise which will be resolved before the request lifecycle continues.
+Our plugin implementation allows you to register objects with async methods that will trigger during request lifecycle. Plugins are more robust than event callbacks because they are allowed to alter the Response object and they can register their own helper methods on your client object. You can also return a Promise which will be resolved before the request lifecycle continues.
 
 The most basic implementation of a plugin looks like this
 
@@ -148,8 +137,7 @@ This library includes some built-in plugins:
 
 ##### JWT
 
-The JWT plugin sets the JSON web token in the request's Authorization header and emits
-AUTH_EXPIRED or AUTH_FAILED events on 401 responses.
+The JWT plugin sets the JSON web token in the request's Authorization header.
 
 ```
 import { JwtPlugin } from '@synapsestudios/fetch-client';
@@ -209,29 +197,6 @@ class JsonResponsePlugin {
 myClient.addPlugin(new JsonResponsePlugin());
 myClient.get('coolthings').then(json => {
   // we have json now!
-});
-```
-
-#### Triggering Custom Events
-
-```
-class MyPlugin {
-  function onStart(request) {
-    // emit a custom event
-    this.client.eventEmitter.emit('custom_event', request);
-    return request;
-  }
-}
-
-myClient.addPlugin(new MyPlugin());
-
-// register a handler for our custom event
-myClient.on('custom_event', request => {
-  // do something
-});
-
-myClient.get('coolthings').then(response => {
-  // handle response
 });
 ```
 
