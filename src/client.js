@@ -14,7 +14,8 @@ class TimeoutError extends Error {
 
 export default class Client {
   constructor(defaults) {
-    const encodingIsInvalid = () => defaults &&
+    const encodingIsInvalid = () =>
+      defaults &&
       typeof defaults.encoding !== 'undefined' &&
       allowedEncodings.indexOf(defaults.encoding) === -1;
 
@@ -25,7 +26,8 @@ export default class Client {
     this.defaults = merge.recursive(true, this._getDefaults(), defaults);
 
     if (this.defaults.url) {
-      this.defaults.sep = this.defaults.url[this.defaults.url.length - 1] === '/' ? '' : '/';
+      this.defaults.sep =
+        this.defaults.url[this.defaults.url.length - 1] === '/' ? '' : '/';
     }
 
     this.eventEmitter = new EventEmitter2();
@@ -60,7 +62,14 @@ export default class Client {
   }
 
   _callOnCompletes(request, response, clonedRequest) {
-    return this._callPluginMethod('onComplete', 1, false, request, response, clonedRequest);
+    return this._callPluginMethod(
+      'onComplete',
+      1,
+      false,
+      request,
+      response,
+      clonedRequest
+    );
   }
 
   _callOnFails(request, response) {
@@ -114,20 +123,42 @@ export default class Client {
       try {
         const response = await Promise.race([
           fetch(request),
-          new Promise((_, reject) => setTimeout(
-            () => reject(new TimeoutError((options && options.timeout) || this.defaults.timeout)),
-            (options && options.timeout) || this.defaults.timeout
-          )),
+          new Promise((_, reject) =>
+            setTimeout(
+              () =>
+                reject(
+                  new TimeoutError(
+                    (options && options.timeout) || this.defaults.timeout
+                  )
+                ),
+              (options && options.timeout) || this.defaults.timeout
+            )
+          ),
         ]);
 
-        let mutatedResponse = await this._callOnCompletes(request, response, clonedRequest);
+        let mutatedResponse = await this._callOnCompletes(
+          request,
+          response,
+          clonedRequest
+        );
 
         if (mutatedResponse.status >= 400) {
           mutatedResponse = await this._callOnFails(request, mutatedResponse);
-          this.eventEmitter.emit(events.REQUEST_FAILURE, request, mutatedResponse);
+          this.eventEmitter.emit(
+            events.REQUEST_FAILURE,
+            request,
+            mutatedResponse
+          );
         } else {
-          mutatedResponse = await this._callOnSuccesses(request, mutatedResponse);
-          this.eventEmitter.emit(events.REQUEST_SUCCESS, request, mutatedResponse);
+          mutatedResponse = await this._callOnSuccesses(
+            request,
+            mutatedResponse
+          );
+          this.eventEmitter.emit(
+            events.REQUEST_SUCCESS,
+            request,
+            mutatedResponse
+          );
         }
 
         return mutatedResponse;
@@ -169,10 +200,10 @@ export default class Client {
   _formAppendArrayOrObject(formObject, data, key, forQueryString) {
     if (Array.isArray(data)) {
       data.forEach((val) => {
-        if (typeof(val) === 'object') {
+        if (typeof val === 'object') {
           this._formAppendArrayOrObject(formObject, val, `${key}[]`);
         } else {
-          if (! forQueryString || this.defaults.bracketStyleArrays) {
+          if (!forQueryString || this.defaults.bracketStyleArrays) {
             formObject.append(`${key}[]`, val);
           } else {
             formObject.append(`${key}`, val);
@@ -180,9 +211,13 @@ export default class Client {
         }
       });
     } else {
-      Object.keys(data).forEach(val => {
-        if (typeof(data[val]) === 'object') {
-          this._formAppendArrayOrObject(formObject, data[val], `${key}[${val}]`);
+      Object.keys(data).forEach((val) => {
+        if (typeof data[val] === 'object') {
+          this._formAppendArrayOrObject(
+            formObject,
+            data[val],
+            `${key}[${val}]`
+          );
         } else {
           formObject.append(`${key}[${val}]`, data[val]);
         }
@@ -192,8 +227,13 @@ export default class Client {
 
   _encodeForm(body, formObject, forQueryString) {
     Object.keys(body).forEach((val) => {
-      if (typeof(body[val]) === 'object') {
-        this._formAppendArrayOrObject(formObject, body[val], `${val}`, forQueryString);
+      if (typeof body[val] === 'object') {
+        this._formAppendArrayOrObject(
+          formObject,
+          body[val],
+          `${val}`,
+          forQueryString
+        );
       } else {
         formObject.append(val, body[val]);
       }
