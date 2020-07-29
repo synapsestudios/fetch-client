@@ -28,7 +28,9 @@ describe('helpers & defaults', () => {
 
       return myClient.fetch('test').then(() => {
         expect(global.fetch.args[0][0]).to.be.instanceof(Request);
-        expect(global.fetch.args[0][0].url).to.equal('http://something.com/test');
+        expect(global.fetch.args[0][0].url).to.equal(
+          'http://something.com/test'
+        );
       });
     });
 
@@ -38,7 +40,9 @@ describe('helpers & defaults', () => {
 
       return myClient.fetch('test').then(() => {
         expect(global.fetch.args[0][0]).to.be.instanceof(Request);
-        expect(global.fetch.args[0][0].url).to.equal('http://something.com/test');
+        expect(global.fetch.args[0][0].url).to.equal(
+          'http://something.com/test'
+        );
       });
     });
 
@@ -54,7 +58,7 @@ describe('helpers & defaults', () => {
   });
 
   describe('helper basics', () => {
-    it('calls fetch() with method=\'get\' in options when calling get()', () => {
+    it("calls fetch() with method='get' in options when calling get()", () => {
       const myClient = new Client({ url: 'http://something.com' });
       myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
@@ -71,7 +75,6 @@ describe('helpers & defaults', () => {
         expect(myClient.fetch.args[0][0]).to.equal('');
       });
     });
-
 
     it('calls fetch() with passed options when calling get()', () => {
       const myClient = new Client({ url: 'http://something.com' });
@@ -94,7 +97,12 @@ describe('helpers & defaults', () => {
 
       myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
-      return myClient.get('test', {}, { headers: { Overridden: 'yes' }, oneMoreThing: 'cooler' })
+      return myClient
+        .get(
+          'test',
+          {},
+          { headers: { Overridden: 'yes' }, oneMoreThing: 'cooler' }
+        )
         .then(() => {
           expect(myClient.fetch.args[0][1].method).to.equal('GET');
           expect(myClient.fetch.args[0][1].headers).to.deep.equal({
@@ -116,11 +124,16 @@ describe('helpers & defaults', () => {
     });
 
     it('uses bracket syntax for arrays in the query string if bracketStyleArrays is true', () => {
-      const myClient = new Client({ url: 'http://something.com', bracketStyleArrays: true });
+      const myClient = new Client({
+        url: 'http://something.com',
+        bracketStyleArrays: true,
+      });
       myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
       return myClient.get('test', { foo: ['bar', 'baz'] }).then(() => {
-        expect(myClient.fetch.args[0][0]).to.equal('test?foo%5B%5D=bar&foo%5B%5D=baz');
+        expect(myClient.fetch.args[0][0]).to.equal(
+          'test?foo%5B%5D=bar&foo%5B%5D=baz'
+        );
       });
     });
 
@@ -152,7 +165,9 @@ describe('helpers & defaults', () => {
           Accept: 'application/json',
           'Content-Type': 'application/json',
         });
-        expect(myClient.fetch.args[0][1].body).to.equal(JSON.stringify({ something: 'test' }));
+        expect(myClient.fetch.args[0][1].body).to.equal(
+          JSON.stringify({ something: 'test' })
+        );
       });
     });
 
@@ -160,11 +175,16 @@ describe('helpers & defaults', () => {
       const myClient = new Client({ url: 'http://something.com' });
       myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
-      return myClient.post(
-        'test',
-        { something: 'test' },
-        { method: 'notallowed', headers: { Accept: 'test' }, anotherThing: 'cool' }
-      )
+      return myClient
+        .post(
+          'test',
+          { something: 'test' },
+          {
+            method: 'notallowed',
+            headers: { Accept: 'test' },
+            anotherThing: 'cool',
+          }
+        )
         .then(() => {
           expect(myClient.fetch.args[0][1].method).to.equal('POST');
           expect(myClient.fetch.args[0][1].headers).to.deep.equal({
@@ -178,23 +198,26 @@ describe('helpers & defaults', () => {
     it('uses post defaults from main defaults object', () => {
       const myClient = new Client({
         url: 'http://something.com',
-        post: { method: 'notallowed', headers: { Accept: 'test' }, anotherThing: 'cool' },
+        post: {
+          method: 'notallowed',
+          headers: { Accept: 'test' },
+          anotherThing: 'cool',
+        },
       });
 
       myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
-      return myClient.post('test', { something: 'test' })
-        .then(() => {
-          expect(myClient.fetch.args[0][1].method).to.equal('POST');
-          expect(myClient.fetch.args[0][1].headers).to.deep.equal({
-            Accept: 'test',
-            'Content-Type': 'application/json',
-          });
-          expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
+      return myClient.post('test', { something: 'test' }).then(() => {
+        expect(myClient.fetch.args[0][1].method).to.equal('POST');
+        expect(myClient.fetch.args[0][1].headers).to.deep.equal({
+          Accept: 'test',
+          'Content-Type': 'application/json',
         });
+        expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
+      });
     });
 
-    it('calls delete with method=\'delete\' in options', () => {
+    it("calls delete with method='delete' in options", () => {
       const myClient = new Client({ url: 'http://something.com' });
       myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
@@ -207,39 +230,45 @@ describe('helpers & defaults', () => {
     it('calls patch with headers, method, body', () => {
       const myClient = new Client({
         url: 'http://something.com',
-        patch: { method: 'notallowed', headers: { Accept: 'test' }, anotherThing: 'cool' },
+        patch: {
+          method: 'notallowed',
+          headers: { Accept: 'test' },
+          anotherThing: 'cool',
+        },
       });
 
       myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
-      return myClient.patch('test', { something: 'test' })
-        .then(() => {
-          expect(myClient.fetch.args[0][1].method).to.equal('PATCH');
-          expect(myClient.fetch.args[0][1].headers).to.deep.equal({
-            Accept: 'test',
-            'Content-Type': 'application/json',
-          });
-          expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
+      return myClient.patch('test', { something: 'test' }).then(() => {
+        expect(myClient.fetch.args[0][1].method).to.equal('PATCH');
+        expect(myClient.fetch.args[0][1].headers).to.deep.equal({
+          Accept: 'test',
+          'Content-Type': 'application/json',
         });
+        expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
+      });
     });
 
     it('calls put with headers, method, body', () => {
       const myClient = new Client({
         url: 'http://something.com',
-        patch: { method: 'notallowed', headers: { Accept: 'test' }, anotherThing: 'cool' },
+        patch: {
+          method: 'notallowed',
+          headers: { Accept: 'test' },
+          anotherThing: 'cool',
+        },
       });
 
       myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
-      return myClient.patch('test', { something: 'test' })
-        .then(() => {
-          expect(myClient.fetch.args[0][1].method).to.equal('PATCH');
-          expect(myClient.fetch.args[0][1].headers).to.deep.equal({
-            Accept: 'test',
-            'Content-Type': 'application/json',
-          });
-          expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
+      return myClient.patch('test', { something: 'test' }).then(() => {
+        expect(myClient.fetch.args[0][1].method).to.equal('PATCH');
+        expect(myClient.fetch.args[0][1].headers).to.deep.equal({
+          Accept: 'test',
+          'Content-Type': 'application/json',
         });
+        expect(myClient.fetch.args[0][1].anotherThing).to.equal('cool');
+      });
     });
   });
 
@@ -259,7 +288,8 @@ describe('helpers & defaults', () => {
           body.append('x', 'y');
 
           myClient[method]('path', body);
-          expect(myClient.fetch.args[0][1].headers['Content-Type']).to.be.undefined;
+          expect(myClient.fetch.args[0][1].headers['Content-Type']).to.be
+            .undefined;
           expect(myClient.fetch.args[0][1].body).to.equal(body);
         });
 
@@ -271,7 +301,8 @@ describe('helpers & defaults', () => {
           body.append('x', 'y');
 
           myClient[method]('path', body);
-          expect(myClient.fetch.args[0][1].headers['Content-Type']).to.be.undefined;
+          expect(myClient.fetch.args[0][1].headers['Content-Type']).to.be
+            .undefined;
           expect(myClient.fetch.args[0][1].body).to.equal(body);
         });
       });
@@ -290,8 +321,12 @@ describe('helpers & defaults', () => {
 
           const promise = myClient[method]('something', { test: 'foo' });
           return expect(promise).to.be.fulfilled.then(() => {
-            expect(myClient.fetch.args[0][1].headers['Content-Type']).to.equal('application/json');
-            expect(myClient.fetch.args[0][1].body).to.equal(JSON.stringify({ test: 'foo' }));
+            expect(myClient.fetch.args[0][1].headers['Content-Type']).to.equal(
+              'application/json'
+            );
+            expect(myClient.fetch.args[0][1].body).to.equal(
+              JSON.stringify({ test: 'foo' })
+            );
           });
         });
 
@@ -301,7 +336,9 @@ describe('helpers & defaults', () => {
 
           const promise = myClient[method]('something', 'test');
           return expect(promise).to.be.fulfilled.then(() => {
-            expect(myClient.fetch.args[0][1].headers['Content-Type']).to.equal('text/plain');
+            expect(myClient.fetch.args[0][1].headers['Content-Type']).to.equal(
+              'text/plain'
+            );
             expect(myClient.fetch.args[0][1].body).to.equal('test');
           });
         });
@@ -317,12 +354,17 @@ describe('helpers & defaults', () => {
             someArray: ['hey', 'ho'],
             someNestedArray: ['hey', ['ho', 'foo']],
             someObject: { foo: 'bar' },
-            someRecursive: { foo: ['array'], bar: 'string', baz: { val: 'object' } },
+            someRecursive: {
+              foo: ['array'],
+              bar: 'string',
+              baz: { val: 'object' },
+            },
           });
 
           return expect(promise).to.be.fulfilled.then(() => {
             // when using FormData fetch sets content type correctly on its own
-            expect(myClient.fetch.args[0][1].headers['Content-Type']).to.be.undefined;
+            expect(myClient.fetch.args[0][1].headers['Content-Type']).to.be
+              .undefined;
 
             const formData = new global.FormData();
             formData.append('something', 'hi');
@@ -335,7 +377,9 @@ describe('helpers & defaults', () => {
             formData.append('someRecursive[foo][]', 'array');
             formData.append('someRecursive[bar]', 'string');
             formData.append('someRecursive[baz][val]', 'object');
-            expect(myClient.fetch.args[0][1].body.appends).to.deep.equal(formData.appends);
+            expect(myClient.fetch.args[0][1].body.appends).to.deep.equal(
+              formData.appends
+            );
 
             global.FormData = FormData;
           });
@@ -351,12 +395,18 @@ describe('helpers & defaults', () => {
             something: 'hi',
             someArray: ['hey', 'ho'],
             someObject: { foo: 'bar' },
-            someRecursive: { foo: ['array'], bar: 'string', baz: { val: 'object' } },
+            someRecursive: {
+              foo: ['array'],
+              bar: 'string',
+              baz: { val: 'object' },
+            },
           });
 
           return expect(promise).to.be.fulfilled.then(() => {
             // when using URLSearchParams, fetch sets content type correctly on its own
-            expect(myClient.fetch.args[0][1].headers['Content-Type']).to.be.equal('application/x-www-form-urlencoded');
+            expect(
+              myClient.fetch.args[0][1].headers['Content-Type']
+            ).to.be.equal('application/x-www-form-urlencoded');
 
             const formData = new global.URLSearchParams();
             formData.append('something', 'hi');
@@ -366,7 +416,9 @@ describe('helpers & defaults', () => {
             formData.append('someRecursive[foo][]', 'array');
             formData.append('someRecursive[bar]', 'string');
             formData.append('someRecursive[baz][val]', 'object');
-            expect(myClient.fetch.args[0][1].body).to.deep.equal(formData.toString());
+            expect(myClient.fetch.args[0][1].body).to.deep.equal(
+              formData.toString()
+            );
 
             global.URLSearchParams = URLSearchParams;
           });
@@ -382,10 +434,14 @@ describe('helpers & defaults', () => {
           const myClient = new Client(defaults);
 
           myClient.fetch = sinon.spy(() => Promise.resolve(true));
-          expect(myClient[method]('something', 'test')).to.be.fulfilled.then(() => {
-            expect(myClient.fetch.args[0][1].headers['Content-Type']).to.equal('something/weird');
-            expect(myClient.fetch.args[0][1].body).to.equal('test');
-          });
+          expect(myClient[method]('something', 'test')).to.be.fulfilled.then(
+            () => {
+              expect(
+                myClient.fetch.args[0][1].headers['Content-Type']
+              ).to.equal('something/weird');
+              expect(myClient.fetch.args[0][1].body).to.equal('test');
+            }
+          );
         });
       });
 
@@ -394,9 +450,13 @@ describe('helpers & defaults', () => {
           const myClient = new Client();
           myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
-          const promise = myClient[method]('path', { foo: 'bar' }, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          });
+          const promise = myClient[method](
+            'path',
+            { foo: 'bar' },
+            {
+              headers: { 'Content-Type': 'multipart/form-data' },
+            }
+          );
 
           return expect(promise).to.have.been.fulfilled.then(() => {
             expect(myClient.fetch.args[0][1].body).to.be.instanceof(FormData);
@@ -407,9 +467,13 @@ describe('helpers & defaults', () => {
           const myClient = new Client();
           myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
-          const promise = myClient[method]('path', { foo: 'bar' }, {
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          });
+          const promise = myClient[method](
+            'path',
+            { foo: 'bar' },
+            {
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            }
+          );
 
           return expect(promise).to.have.been.fulfilled.then(() => {
             expect(typeof myClient.fetch.args[0][1].body).to.be.equal('string');
@@ -420,12 +484,18 @@ describe('helpers & defaults', () => {
           const myClient = new Client();
           myClient.fetch = sinon.spy(() => Promise.resolve('test'));
 
-          const promise = myClient[method]('path', { foo: 'bar' }, {
-            headers: { 'Content-Type': 'application/json' },
-          });
+          const promise = myClient[method](
+            'path',
+            { foo: 'bar' },
+            {
+              headers: { 'Content-Type': 'application/json' },
+            }
+          );
 
           return expect(promise).to.have.been.fulfilled.then(() => {
-            expect(myClient.fetch.args[0][1].body).to.equal(JSON.stringify({ foo: 'bar' }));
+            expect(myClient.fetch.args[0][1].body).to.equal(
+              JSON.stringify({ foo: 'bar' })
+            );
           });
         });
 

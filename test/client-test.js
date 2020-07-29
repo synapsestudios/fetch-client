@@ -28,50 +28,59 @@ describe('client', () => {
     global.fetch = sinon.spy(() => Promise.resolve('test'));
 
     const request = new Request();
-    return myClient.fetch(request).then(() => expect(global.fetch).to.be.calledWith(request));
+    return myClient
+      .fetch(request)
+      .then(() => expect(global.fetch).to.be.calledWith(request));
   });
 
-  it(
-    'should convert falsy values to empty string when calling _getFullPath() without a path',
-    () => {
-      const myClientWithUrl = new Client({ url: 'http://something.com' });
-      const fullPathWithUrl = myClientWithUrl._getFullPath();
+  it('should convert falsy values to empty string when calling _getFullPath() without a path', () => {
+    const myClientWithUrl = new Client({ url: 'http://something.com' });
+    const fullPathWithUrl = myClientWithUrl._getFullPath();
 
-      const myClientWithoutUrl = new Client();
-      const fullPathWithoutUrl = myClientWithoutUrl._getFullPath();
+    const myClientWithoutUrl = new Client();
+    const fullPathWithoutUrl = myClientWithoutUrl._getFullPath();
 
-      expect(fullPathWithUrl).to.equal('http://something.com/');
-      expect(fullPathWithoutUrl).to.equal('');
-    });
+    expect(fullPathWithUrl).to.equal('http://something.com/');
+    expect(fullPathWithoutUrl).to.equal('');
+  });
 
-  describe('timeout', function() {
+  describe('timeout', function () {
     this.timeout(11000);
 
     it('has a default timeout', () => {
-      global.fetch = sinon.spy(() => new Promise((resolve, reject) => setTimeout(reject, 15000)));
+      global.fetch = sinon.spy(
+        () => new Promise((resolve, reject) => setTimeout(reject, 15000))
+      );
       const myClient = new Client();
       const promise = myClient.fetch('http://google.com/', { method: 'get' });
-      return expect(promise).to.be.rejected.then(error => {
+      return expect(promise).to.be.rejected.then((error) => {
         expect(error.name).to.equal('TimeoutError');
         expect(error.timeout).to.equal(10000);
       });
     });
 
     it('should honor global timeout', () => {
-      global.fetch = sinon.spy(() => new Promise((resolve, reject) => setTimeout(reject, 15000)));
+      global.fetch = sinon.spy(
+        () => new Promise((resolve, reject) => setTimeout(reject, 15000))
+      );
       const myClient = new Client({ timeout: 1000 });
       const promise = myClient.fetch('http://google.com/', { method: 'get' });
-      return expect(promise).to.be.rejected.then(error => {
+      return expect(promise).to.be.rejected.then((error) => {
         expect(error.name).to.equal('TimeoutError');
         expect(error.timeout).to.equal(1000);
       });
     });
 
     it('should honor timeout override', () => {
-      global.fetch = sinon.spy(() => new Promise((resolve, reject) => setTimeout(reject, 15000)));
+      global.fetch = sinon.spy(
+        () => new Promise((resolve, reject) => setTimeout(reject, 15000))
+      );
       const myClient = new Client();
-      const promise = myClient.fetch('http://google.com/', { method: 'get', timeout: 1000 });
-      return expect(promise).to.be.rejected.then(error => {
+      const promise = myClient.fetch('http://google.com/', {
+        method: 'get',
+        timeout: 1000,
+      });
+      return expect(promise).to.be.rejected.then((error) => {
         expect(error.name).to.equal('TimeoutError');
         expect(error.timeout).to.equal(1000);
       });
@@ -86,12 +95,14 @@ describe('client', () => {
       const cb = sinon.spy();
       myClient.on(events.REQUEST_START, cb);
 
-      return myClient.fetch('http://google.com/', { method: 'get' }).then(() => {
-        expect(cb).to.have.been.calledOnce;
-        expect(cb.args[0][0]).to.be.instanceof(Request);
-        expect(cb.args[0][0]).to.have.property('url', 'http://google.com/');
-        expect(cb.args[0][0]).to.have.property('method', 'GET');
-      });
+      return myClient
+        .fetch('http://google.com/', { method: 'get' })
+        .then(() => {
+          expect(cb).to.have.been.calledOnce;
+          expect(cb.args[0][0]).to.be.instanceof(Request);
+          expect(cb.args[0][0]).to.have.property('url', 'http://google.com/');
+          expect(cb.args[0][0]).to.have.property('method', 'GET');
+        });
     });
 
     it('should emit success event', () => {
@@ -103,7 +114,7 @@ describe('client', () => {
 
       const promise = myClient.fetch('http://google.com/', { method: 'get' });
 
-      return expect(promise).to.be.fulfilled.then(x => {
+      return expect(promise).to.be.fulfilled.then((x) => {
         expect(cb).to.have.been.calledOnce;
         expect(cb.args[0][0]).to.be.instanceof(Request);
         expect(cb.args[0][0]).to.have.property('url', 'http://google.com/');
@@ -113,7 +124,10 @@ describe('client', () => {
     });
 
     it('should emit fail event', () => {
-      const response = new Response(null, { status: 400, statusText: 'whatever 400' });
+      const response = new Response(null, {
+        status: 400,
+        statusText: 'whatever 400',
+      });
       global.fetch = sinon.spy(() => Promise.resolve(response));
 
       const myClient = new Client();
@@ -122,7 +136,7 @@ describe('client', () => {
 
       const promise = myClient.fetch('http://google.com/', { method: 'get' });
 
-      return expect(promise).to.be.fulfilled.then(x => {
+      return expect(promise).to.be.fulfilled.then((x) => {
         expect(cb).to.have.been.calledOnce;
         expect(cb.args[0][0]).to.be.instanceof(Request);
         expect(cb.args[0][0]).to.have.property('url', 'http://google.com/');
@@ -140,7 +154,7 @@ describe('client', () => {
 
       const promise = myClient.fetch('http://google.com/', { method: 'get' });
 
-      return expect(promise).to.be.rejected.then(x => {
+      return expect(promise).to.be.rejected.then((x) => {
         expect(cb).to.have.been.calledOnce;
         expect(cb.args[0][0]).to.be.instanceof(Request);
         expect(cb.args[0][0]).to.have.property('url', 'http://google.com/');
@@ -161,11 +175,10 @@ describe('client', () => {
         get: { headers: { 'X-TEST': 'FOO' } },
       });
       global.fetch = sinon.spy(() => Promise.resolve('test'));
-      myClient.get('path')
-      .then(() => {
-          expect(global.fetch).to.have.been.called;
-          expect(global.fetch.args[0][0].headers.get('X-TEST')).to.equal('FOO');
-        });
+      myClient.get('path').then(() => {
+        expect(global.fetch).to.have.been.called;
+        expect(global.fetch.args[0][0].headers.get('X-TEST')).to.equal('FOO');
+      });
     });
 
     it('merges passed in headers with defaults', () => {
@@ -173,21 +186,27 @@ describe('client', () => {
         get: { headers: { 'X-TEST': 'FOO' } },
       });
       global.fetch = sinon.spy(() => Promise.resolve('test'));
-      myClient.get('path', {}, { headers: { 'X-PASSED-IN': 'VALUE' } })
+      myClient
+        .get('path', {}, { headers: { 'X-PASSED-IN': 'VALUE' } })
         .then(() => {
           expect(global.fetch).to.have.been.called;
           expect(global.fetch.args[0][0].headers.get('X-TEST')).to.equal('FOO');
-          expect(global.fetch.args[0][0].headers.get('X-PASSED-IN')).to.equal('VALUE');
+          expect(global.fetch.args[0][0].headers.get('X-PASSED-IN')).to.equal(
+            'VALUE'
+          );
         });
     });
 
     it('uses passed in headers if there are no defaults', () => {
       const myClient = new Client();
       global.fetch = sinon.spy(() => Promise.resolve('test'));
-      myClient.get('path', {}, { headers: { 'X-PASSED-IN': 'VALUE' } })
+      myClient
+        .get('path', {}, { headers: { 'X-PASSED-IN': 'VALUE' } })
         .then(() => {
           expect(global.fetch).to.have.been.called;
-          expect(global.fetch.args[0][0].headers.get('X-PASSED-IN')).to.equal('VALUE');
+          expect(global.fetch.args[0][0].headers.get('X-PASSED-IN')).to.equal(
+            'VALUE'
+          );
         });
     });
   });
@@ -273,7 +292,7 @@ describe('client', () => {
         });
       });
 
-      it('doesn\'t break when onStart is left out', () => {
+      it("doesn't break when onStart is left out", () => {
         global.fetch = sinon.spy(() => Promise.resolve('test'));
         const myClient = new Client();
         const myPlugin = { arbitrary: 'object' };
@@ -307,7 +326,7 @@ describe('client', () => {
         myClient.addPlugin({ onStart: onStart1 });
         myClient.addPlugin({ onStart: onStart2 });
 
-        return myClient.fetch().catch(err => {
+        return myClient.fetch().catch((err) => {
           expect(onStart1).to.have.been.calledOnce;
           expect(onStart2).to.have.callCount(0);
         });
@@ -344,10 +363,9 @@ describe('client', () => {
 
         const promise = myClient.fetch();
         expect(global.fetch).to.not.be.called;
-        return expect(promise).to.be.rejected
-          .then(err => {
-            expect(err.name).to.equal('PluginError');
-          });
+        return expect(promise).to.be.rejected.then((err) => {
+          expect(err.name).to.equal('PluginError');
+        });
       });
 
       it('calls multiple plugin in the order they were added', () => {

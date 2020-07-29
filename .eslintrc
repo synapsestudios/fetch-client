@@ -1,22 +1,25 @@
 {
-    "parser": "babel-eslint",
-    "extends": "airbnb",
-    "env": {"browser": true},
-    "rules": {
-        "func-names": 1,
-        "new-cap": [2, {"newIsCapExceptions": ["fromJS"]}],
-        "no-param-reassign": [2, { "props": false }],
-        "no-unused-vars": [2, { "args": "none" }],
-        "no-underscore-dangle": "off",
-        "import/order": "off",
-        "operator-linebreak": "off",
-        "class-methods-use-this": "off",
-        "no-await-in-loop": "off",
-        "no-plusplus": "off",
-        "space-unary-ops": "off",
-        "no-lonely-if": "off",
-        "comma-dangle": "off",
-        "arrow-parens": "off",
-        "prefer-destructuring": "off"
-    }
+  "parser": "babel-eslint",
+  "extends": "airbnb",
+  "env": { "browser": true },
+  "rules": {
+    "func-names": 1,
+    "new-cap": [2, { "newIsCapExceptions": ["fromJS"] }],
+    "no-param-reassign": [2, { "props": false }],
+    "no-unused-vars": [2, { "args": "none" }],
+    "no-underscore-dangle": "off",
+    "import/order": "off",
+    "operator-linebreak": "off",
+    "class-methods-use-this": "off",
+    "no-await-in-loop": "off",
+    "no-plusplus": "off",
+    "space-unary-ops": "off",
+    "no-lonely-if": "off",
+    "comma-dangle": "off",
+    "arrow-parens": "off",
+    "prefer-destructuring": "off",
+    "implicit-arrow-linebreak": "off",
+    "object-curly-newline": "off",
+    "function-paren-newline": "off"
+  }
 }

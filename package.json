@@ -14,7 +14,8 @@
     "build": "npm run clean && babel src --out-dir lib",
     "build:watch": "npm run build -- --watch",
     "lint": "eslint src",
-    "prepublishOnly": "npm run lint && npm test && npm run build"
+    "prepublishOnly": "npm run lint && npm test && npm run build",
+    "prettier": "prettier --check ."
   },
   "repository": {
     "type": "git",
@@ -47,6 +48,7 @@
     "form-data": "~1.0.0-rc4",
     "lodash.clonedeep": "~4.3.2",
     "mocha": "~6.0.2",
+    "prettier": "^2.0.5",
     "sinon": "~1.17.3",
     "sinon-chai": "~2.8.0",
     "urlsearchparams": "~0.1.1",
