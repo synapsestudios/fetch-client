@@ -1,67 +1,42 @@
 import qs from 'querystring';
 
-const TOKEN_REFRESHED = 'TOKEN_REFRESHED';
-const TOKEN_REFRESH_FAILED = 'TOKEN_REFRESH_FAILED';
-
 export default {
   async onStart(request) {
-    if (this.client.refreshing) {
-      request.secondTry = true;
+    if (this.client.refreshing) await this.client.refreshRequest;
 
-      await new Promise((resolve) => {
-        this.client.eventEmitter.once(TOKEN_REFRESHED, () => {
-          request.headers.set(
-            'Authorization',
-            `Bearer ${this.client.getBearerToken()}`
-          );
-          resolve();
-        });
-        this.client.eventEmitter.once(TOKEN_REFRESH_FAILED, () => resolve());
-      });
-    } else {
-      request.headers.set(
-        'Authorization',
-        `Bearer ${this.client.getBearerToken()}`
-      );
-    }
+    request.headers.set(
+      'Authorization',
+      `Bearer ${this.client.getBearerToken()}`
+    );
+
     return request;
   },
 
   async onComplete(request, response, clonedRequest) {
-    const usedRefreshTokens = this.client.usedRefreshTokens;
-    const currentRefreshToken = this.client.getRefreshToken();
+    if (response.status === 401) {
+      if (!this.client.refreshing) {
+        this.client.refreshing = true;
 
-    if (this.client.refreshing) {
-      const refreshResponse = await this.client.refreshPromise;
-      if (refreshResponse.status === 200) {
+        const refreshToken = this.client.getRefreshToken();
+
+        this.client.refreshRequest = this.helpers
+          .refreshToken(this.client.oauthConfig, refreshToken)
+          .then(async (response) => {
+            if (response.status === 200) {
+              this.client.usedRefreshTokens.push(refreshToken);
+              const json = await response.json();
+              await this.client.onRefreshResponse(json);
+            }
+            this.client.refreshing = false;
+            return response;
+          });
+      }
+
+      const response = await this.client.refreshRequest;
+
+      if (response.status === 200) {
         return this.client.fetch(clonedRequest);
       }
-    }
-
-    if (
-      !this.client.refreshing &&
-      response.status === 401 &&
-      !usedRefreshTokens.includes(currentRefreshToken)
-    ) {
-      this.client.refreshing = true;
-
-      this.client.refreshPromise = this.helpers.refreshToken(
-        this.client.oauthConfig,
-        this.client.getRefreshToken
-      );
-
-      const refreshResponse = await this.client.refreshPromise;
-
-      this.client.refreshing = false;
-
-      if (refreshResponse.status === 200) {
-        this.client.usedRefreshTokens.push(currentRefreshToken);
-        this.client.eventEmitter.emit(TOKEN_REFRESHED);
-        const tokenRefreshResponseBody = await refreshResponse.json();
-        await this.client.onRefreshResponse(tokenRefreshResponseBody);
-        return this.client.fetch(clonedRequest);
-      }
-      this.client.eventEmitter.emit(TOKEN_REFRESH_FAILED);
     }
 
     return response;
@@ -72,7 +47,7 @@ export default {
       this.oauthConfig = config;
     },
 
-    refreshToken(oauthConfig, getRefreshToken) {
+    refreshToken(oauthConfig, refreshToken) {
       const tokenRequest = new Request(oauthConfig.refresh_path, {
         method: 'POST',
         headers: {
@@ -80,7 +55,7 @@ export default {
         },
         body: qs.stringify({
           grant_type: 'refresh_token',
-          refresh_token: getRefreshToken(),
+          refresh_token: refreshToken,
           client_id: oauthConfig.client_id,
         }),
       });

@@ -44,3 +44,5 @@ shippable/
 
 # package-lock.json should not be committed to library
 package-lock.json
+
+.DS_Store

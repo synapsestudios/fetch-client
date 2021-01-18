@@ -201,8 +201,8 @@ describe('oauth-plugin', () => {
       expect(global.fetch.callCount).to.equal(3);
       expect(oauthPlugin.helpers.refreshToken).to.be.calledOnce;
       // requests resolve to the response object
-      expect(resolutions[0]).to.equal(response200ii); // Not sure why this one is first but it's fine
-      expect(resolutions[1]).to.equal(response200);
+      expect(resolutions[0]).to.equal(response200);
+      expect(resolutions[1]).to.equal(response200ii);
     });
   });
 

@@ -11,9 +11,6 @@ chai.use(sinonChai);
 import Client from '../src/client';
 import PluginError from '../src/plugin-error';
 
-import EventEmitter2 from 'eventemitter2';
-import * as events from '../src/events';
-
 // polyfills
 import { Request, Response } from 'whatwg-fetch';
 global.Request = Request;
@@ -84,88 +81,6 @@ describe('client', () => {
         expect(error.name).to.equal('TimeoutError');
         expect(error.timeout).to.equal(1000);
       });
-    });
-  });
-
-  describe('events', () => {
-    it('should emit starting event', () => {
-      global.fetch = sinon.spy(() => Promise.resolve('test'));
-
-      const myClient = new Client();
-      const cb = sinon.spy();
-      myClient.on(events.REQUEST_START, cb);
-
-      return myClient
-        .fetch('http://google.com/', { method: 'get' })
-        .then(() => {
-          expect(cb).to.have.been.calledOnce;
-          expect(cb.args[0][0]).to.be.instanceof(Request);
-          expect(cb.args[0][0]).to.have.property('url', 'http://google.com/');
-          expect(cb.args[0][0]).to.have.property('method', 'GET');
-        });
-    });
-
-    it('should emit success event', () => {
-      global.fetch = sinon.spy(() => Promise.resolve('test'));
-
-      const myClient = new Client();
-      const cb = sinon.spy();
-      myClient.on(events.REQUEST_SUCCESS, cb);
-
-      const promise = myClient.fetch('http://google.com/', { method: 'get' });
-
-      return expect(promise).to.be.fulfilled.then((x) => {
-        expect(cb).to.have.been.calledOnce;
-        expect(cb.args[0][0]).to.be.instanceof(Request);
-        expect(cb.args[0][0]).to.have.property('url', 'http://google.com/');
-        expect(cb.args[0][0]).to.have.property('method', 'GET');
-        expect(cb.args[0][1]).to.equal('test');
-      });
-    });
-
-    it('should emit fail event', () => {
-      const response = new Response(null, {
-        status: 400,
-        statusText: 'whatever 400',
-      });
-      global.fetch = sinon.spy(() => Promise.resolve(response));
-
-      const myClient = new Client();
-      const cb = sinon.spy();
-      myClient.on(events.REQUEST_FAILURE, cb);
-
-      const promise = myClient.fetch('http://google.com/', { method: 'get' });
-
-      return expect(promise).to.be.fulfilled.then((x) => {
-        expect(cb).to.have.been.calledOnce;
-        expect(cb.args[0][0]).to.be.instanceof(Request);
-        expect(cb.args[0][0]).to.have.property('url', 'http://google.com/');
-        expect(cb.args[0][0]).to.have.property('method', 'GET');
-        expect(cb.args[0][1]).to.equal(response);
-      });
-    });
-
-    it('should emit error event', () => {
-      global.fetch = sinon.spy(() => Promise.reject('test'));
-
-      const myClient = new Client();
-      const cb = sinon.spy();
-      myClient.on(events.REQUEST_ERROR, cb);
-
-      const promise = myClient.fetch('http://google.com/', { method: 'get' });
-
-      return expect(promise).to.be.rejected.then((x) => {
-        expect(cb).to.have.been.calledOnce;
-        expect(cb.args[0][0]).to.be.instanceof(Request);
-        expect(cb.args[0][0]).to.have.property('url', 'http://google.com/');
-        expect(cb.args[0][0]).to.have.property('method', 'GET');
-        expect(cb.args[0][1]).to.equal('test');
-      });
-    });
-
-    it('should return an event emitter object', () => {
-      const myClient = new Client();
-      expect(myClient.eventEmitter).to.be.instanceof(EventEmitter2);
     });
   });
 
@@ -241,26 +156,6 @@ describe('client', () => {
         myClient.removePlugin('mySecondPlugin');
 
         expect(myClient._plugins).to.deep.equal([myPlugin, myThirdPlugin]);
-      });
-
-      it('can emit custom events', () => {
-        global.fetch = sinon.spy(() => Promise.resolve('test'));
-        const myClient = new Client();
-        const cb = sinon.spy();
-        myClient.on('custom_event', cb);
-
-        class MyPlugin {
-          onStart(request) {
-            this.client.eventEmitter.emit('custom_event');
-            return request;
-          }
-        }
-
-        const myPlugin = new MyPlugin();
-        myClient.addPlugin(myPlugin);
-
-        myClient.fetch('http://whatever.com');
-        expect(cb).to.have.been.calledOnce;
       });
 
       it('can register helper methods on the client object', () => {

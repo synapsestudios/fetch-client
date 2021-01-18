@@ -1,5 +1,3 @@
-import EventEmitter2 from 'eventemitter2';
-import * as events from './events';
 import PluginError from './plugin-error';
 import merge from 'merge';
 import { defaults as _defaults, allowedEncodings } from './defaults';
@@ -30,7 +28,6 @@ export default class Client {
         this.defaults.url[this.defaults.url.length - 1] === '/' ? '' : '/';
     }
 
-    this.eventEmitter = new EventEmitter2();
     this._plugins = [];
   }
 
@@ -111,7 +108,6 @@ export default class Client {
       request = this._getRequest(path, options);
     }
 
-    this.eventEmitter.emit(events.REQUEST_START, request);
     const clonedRequest = request.clone();
     try {
       request = await this._callOnStarts(request);
@@ -144,18 +140,8 @@ export default class Client {
 
         if (mutatedResponse.status >= 400) {
           mutatedResponse = await this._callOnFails(request, mutatedResponse);
-          this.eventEmitter.emit(
-            events.REQUEST_FAILURE,
-            request,
-            mutatedResponse
-          );
         } else {
           mutatedResponse = await this._callOnSuccesses(
-            request,
-            mutatedResponse
-          );
-          this.eventEmitter.emit(
-            events.REQUEST_SUCCESS,
             request,
             mutatedResponse
           );
@@ -164,7 +150,6 @@ export default class Client {
         return mutatedResponse;
       } catch (err) {
         const mutatedError = await this._callOnErrors(request, err);
-        this.eventEmitter.emit(events.REQUEST_ERROR, request, mutatedError);
         throw mutatedError;
       }
     }
@@ -189,10 +174,6 @@ export default class Client {
         i -= 1;
       }
     }
-  }
-
-  on(event, cb) {
-    this.eventEmitter.on(event, cb);
   }
 
   /* ---- HELPERS ---- */
