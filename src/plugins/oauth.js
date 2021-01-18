@@ -2,7 +2,7 @@ import qs from 'querystring';
 
 export default {
   async onStart(request) {
-    if (this.client.refreshing) await this.client.refreshPromise;
+    if (this.client.refreshing) await this.client.refreshRequest;
 
     request.headers.set(
       'Authorization',
@@ -15,11 +15,11 @@ export default {
   async onComplete(request, response, clonedRequest) {
     if (response.status === 401) {
       if (!this.client.refreshing) {
-        const refreshToken = this.client.getRefreshToken();
-
         this.client.refreshing = true;
 
-        this.client.refreshPromise = this.helpers
+        const refreshToken = this.client.getRefreshToken();
+
+        this.client.refreshRequest = this.helpers
           .refreshToken(this.client.oauthConfig, refreshToken)
           .then(async (response) => {
             if (response.status === 200) {
@@ -32,9 +32,9 @@ export default {
           });
       }
 
-      const refreshResponse = await this.client.refreshPromise;
+      const response = await this.client.refreshRequest;
 
-      if (refreshResponse.status === 200) {
+      if (response.status === 200) {
         return this.client.fetch(clonedRequest);
       }
     }
