@@ -1,19 +1,26 @@
 import qs from 'querystring';
+import events from 'events';
+
+const TOKEN_REFRESHED = 'TOKEN_REFRESHED';
+const TOKEN_REFRESH_FAILED = 'TOKEN_REFRESH_FAILED';
+
+const emitter = new events.EventEmitter()
 
 export default {
   async onStart(request) {
     if (this.client.refreshing) {
-      const refreshed = await new Promise(
-        (resolve) => (this.client.refreshed = resolve)
-      );
-      if (!refreshed) return request;
+      request.secondTry = true;
+
+      await new Promise(resolve => {
+        emitter.once(TOKEN_REFRESHED, () => {
+          request.headers.set('Authorization', `Bearer ${this.client.getBearerToken()}`);
+          resolve();
+        });
+        emitter.once(TOKEN_REFRESH_FAILED, () => resolve());
+      });
+    } else {
+      request.headers.set('Authorization', `Bearer ${this.client.getBearerToken()}`);
     }
-
-    request.headers.set(
-      'Authorization',
-      `Bearer ${this.client.getBearerToken()}`
-    );
-
     return request;
   },
 
@@ -46,12 +53,12 @@ export default {
 
       if (refreshResponse.status === 200) {
         this.client.usedRefreshTokens.push(currentRefreshToken);
-        this.client.refreshed && this.client.refreshed(true);
+        emitter.emit(TOKEN_REFRESHED);
         const tokenRefreshResponseBody = await refreshResponse.json();
         await this.client.onRefreshResponse(tokenRefreshResponseBody);
         return this.client.fetch(clonedRequest);
       }
-      this.client.refreshed && this.client.refreshed(false);
+      emitter.emit(TOKEN_REFRESH_FAILED);
     }
 
     return response;
