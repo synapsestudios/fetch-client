@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+## [v2.0.2](https://github.com/synapsestudios/fetch-client/compare/v2.0.1...v2.0.2) (2022-05-11)
+### Fixed
+- [#126](https://github.com/synapsestudios/fetch-client/issues/126) Upgrade "merge" dependency
+
 ## [v2.0.1](https://github.com/synapsestudios/fetch-client/compare/v2.0.0...v2.0.1) (2019-08-07)
 ### Fixed
 - [#107](https://github.com/synapsestudios/fetch-client/issues/107) oauth: Simultaneous 401s can cause a "already read" error
