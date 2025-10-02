@@ -6,7 +6,7 @@ This library is inspired by libraries like [Fetch+](https://github.com/RickWong/
 
 ## Installation
 
-```
+```sh
 npm install @synapsestudios/fetch-client --save
 ```
 
@@ -15,7 +15,8 @@ Note: fetch-client assumes that `fetch` and `URLSearchParams` are available and 
 ## Usage
 
 By default fetch-client assumes you're consuming json apis and will set `Content-Type` and `Accept` headers to 'application/json' for you.
-```
+
+```js
 var Client = require('@synapsestudios/fetch-client');
 
 var myClient = new Client({ url: 'http://my-api.com' });
@@ -29,19 +30,21 @@ myClient.get('coolthings') // performs GET request to http://my-api.com/coolthin
 ### Client Methods
 
 The client object provides these methods for making requests:
-  - fetch(path, body, options) - wraps fetch and passes body options into the fetch call. Provides event/plugin features.
-  - get(path, body, options)
-  - post(path, body, options)
-  - put(path, body, options)
-  - patch(path, body, options)
-  - delete(path, options)
+
+- fetch(path, body, options) - wraps fetch and passes body options into the fetch call. Provides event/plugin features.
+- get(path, body, options)
+- post(path, body, options)
+- put(path, body, options)
+- patch(path, body, options)
+- delete(path, options)
 
 The get, post, put, patch and delete helper methods are shortcuts that set the HTTP method and also will encode the body appropriately. Your body will be left alone or encoded as json, FormData or URLSearchParams depending on the 'Content-Type' header and the 'encoding' value set in your client's [defaults](#defaults). The options argument is passed directly on to the `fetch` call and is where you set any custom headers and other request options. See <https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch> and <https://github.com/github/fetch> for more information on how to use fetch options.
 
 ### Defaults
+
 Configuration defaults can be provided when instantiating the client object. These defaults are used by the get, post, put, patch and delete helper methods to set default options on the request as well as defining a default encoding. By defining a default encoding value the client will be able to determine how (or whether) to modify the `body` argument in helper methods.
 
-```
+```js
 var defaults = {
   timeout: // integer value for timeout
   encoding: 'json',
@@ -64,16 +67,18 @@ var defaults = {
 ```
 
 #### Encoding
+
 The `encoding` property in the defaults object determines how the http request helper methods attempt to encode the body of the request. Valid values are:
-  - 'json' - Runs the body through `JSON.stringify()`. Sets 'Content-Type' to 'application/json'
-  - 'text' - Does nothing to the body. Sets 'Content-Type' to 'text/plain'
-  - 'form-data' - Encodes body as FormData object. Lets fetch determine 'Content-Type' ('multipart/form-data')
-  - 'x-www-form-urlencoded' - Encodes body as URLSearchParams. Lets fetch determine 'Content-Type' ('application/x-www-form-urlencoded')
-  - false - does nothing to body, does nothing to 'Content-Type'
+
+- 'json' - Runs the body through `JSON.stringify()`. Sets 'Content-Type' to 'application/json'
+- 'text' - Does nothing to the body. Sets 'Content-Type' to 'text/plain'
+- 'form-data' - Encodes body as FormData object. Lets fetch determine 'Content-Type' ('multipart/form-data')
+- 'x-www-form-urlencoded' - Encodes body as URLSearchParams. Lets fetch determine 'Content-Type' ('application/x-www-form-urlencoded')
+- false - does nothing to body, does nothing to 'Content-Type'
 
 ### Timeout
 
-By default fetch-client has a 10 second request time out. You can override that default with your own value when you instantiate the client (`const myClient = new Client({ timeout: 30000 })`) or in the `options` object on individual requests ( `client.get('path', { timeout: 50000 })` )
+By default fetch-client has a 10 second request time out. You can override that default with your own value when you instantiate the client (`const myClient = new Client({ timeout: 30000 })`) or in the `options` object on individual requests (`client.get('path', undefined, { timeout: 50000 })`)
 
 If a request is exceeds the timeout time then the promise with be rejected with a `TimeoutError`. It's important to note that fetch requests can not be aborted, so just because your request timed out and the promise was rejected you should not assume that the request is not still pending.
 
@@ -90,7 +95,7 @@ Client objects will fire lifecycle events that your app can respond to.
 
 #### Example
 
-```
+```js
 myClient.on('REQUEST_START', request => {
   console.log('on start');
 });
@@ -116,7 +121,7 @@ Our plugin implementation allows you to register objects with async methods that
 
 The most basic implementation of a plugin looks like this
 
-```
+```js
 var myPlugin = {
   onStart: async function(request) {
     return request;
@@ -127,6 +132,7 @@ myClient.addPlugin(myPlugin);
 ```
 
 #### Plugin Methods
+
 Plugin methods correspond to events and fire under the same conditions with the same arguments.
 
 | Method Name | Trigger Condition                                           | Args              |
@@ -145,7 +151,7 @@ This library includes some built-in plugins:
 The JWT plugin sets the JSON web token in the request's Authorization header and emits
 AUTH_EXPIRED or AUTH_FAILED events on 401 responses.
 
-```
+```js
 import { JwtPlugin } from '@synapsestudios/fetch-client';
 import store2 from 'store2';
 
@@ -159,7 +165,7 @@ myClient.post('endpoint-that-requires-auth');
 The JSON plugin adds a parsedBody method to the response object that calls
 Response.json() if the Content-Type is application/json, and Response.text() otherwise.
 
-```
+```js
 import { jsonPlugin } from '@synapsestudios/fetch-client';
 
 myClient.addPlugin(jsonPlugin);
@@ -171,9 +177,10 @@ myClient.post('endpoint').then(response => {
 ```
 
 #### Aborting the request with onStart()
+
 If your plugin's `onStart` method returns false or throws an error then the request will be aborted and the promise will be rejected.
 
-```
+```js
 var myPlugin = {
   onStart: function(request) {
     return false;
@@ -191,7 +198,8 @@ myClient.get('coolthings')
 ```
 
 #### Altering the response with onSuccess() and onFail()
-```
+
+```js
 class JsonResponsePlugin {
   function onSuccess(request, response) {
     return response.json();
@@ -203,8 +211,10 @@ myClient.get('coolthings').then(json => {
   // we have json now!
 });
 ```
+
 #### Triggering Custom Events
-```
+
+```js
 class MyPlugin {
   function onStart(request) {
     // emit a custom event
@@ -226,9 +236,10 @@ myClient.get('coolthings').then(response => {
 ```
 
 #### Removing plugins
+
 By adding a name to your plugin object you can then reference it and remove it. Naming plugins is only required if you wish to use this feature to remove plugins.
 
-```
+```js
 var myPlugin {
   name: 'myPlugin',
   onStart: function(request) {
@@ -242,7 +253,7 @@ myClient.removePlugin('myPlugin');
 
 #### Adding helper methods
 
-```
+```js
 var myPlugin = {
   helpers : {
     newHelperFunction: function() {
